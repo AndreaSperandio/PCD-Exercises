@@ -46,31 +46,31 @@ public class BodyTest {
 		}
 		mapBF.keySet().stream().forEach(b -> b.apply(mapBF.get(b), 3.0));
 
-		Assert.assertEquals("MultipleApply bi posX test", 32.0000308106940, this.bi.getPosition().getX(),
+		Assert.assertEquals("MultipleApply bi posX test", 32.00000706389490, this.bi.getPosition().getX(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bi posY test", 5.0000125080111, this.bi.getPosition().getY(),
+		Assert.assertEquals("MultipleApply bi posY test", 5.00000272704123, this.bi.getPosition().getY(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bi speedX test", 10.0000205404627, this.bi.getSpeed().getXComp(),
+		Assert.assertEquals("MultipleApply bi speedX test", 10.00000470926320, this.bi.getSpeed().getXComp(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bi speedY test", 1.0000083386740, this.bi.getSpeed().getYComp(),
-				0.0000000000001);
-
-		Assert.assertEquals("MultipleApply bj posX test", 65.9999951946624, this.bj.getPosition().getX(),
-				0.0000000000001);
-		Assert.assertEquals("MultipleApply bj posY test", 10.9999513459568, this.bj.getPosition().getY(),
-				0.0000000000001);
-		Assert.assertEquals("MultipleApply bj speedX test", 19.9999967964416, this.bj.getSpeed().getXComp(),
-				0.0000000000001);
-		Assert.assertEquals("MultipleApply bj speedY test", 1.9999675639712, this.bj.getSpeed().getYComp(),
+		Assert.assertEquals("MultipleApply bi speedY test", 1.00000181802749, this.bi.getSpeed().getYComp(),
 				0.0000000000001);
 
-		Assert.assertEquals("MultipleApply bk posX test", 95.9999929333271, this.bk.getPosition().getX(),
+		Assert.assertEquals("MultipleApply bj posX test", 65.99999903893250, this.bj.getPosition().getX(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bk posY test", 12.0000282666918, this.bk.getPosition().getY(),
+		Assert.assertEquals("MultipleApply bj posY test", 10.99997675417940, this.bj.getPosition().getY(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bk speedX test", 29.9999952888847, this.bk.getSpeed().getXComp(),
+		Assert.assertEquals("MultipleApply bj speedX test", 19.99999935928830, this.bj.getSpeed().getXComp(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bk speedY test", 3.0000188444611, this.bk.getSpeed().getYComp(),
+		Assert.assertEquals("MultipleApply bj speedY test", 1.99998450278624, this.bj.getSpeed().getYComp(),
+				0.0000000000001);
+
+		Assert.assertEquals("MultipleApply bk posX test", 95.99999828608010, this.bk.getPosition().getX(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bk posY test", 12.00001458820000, this.bk.getPosition().getY(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bk speedX test", 29.99999885738670, this.bk.getSpeed().getXComp(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bk speedY test", 3.00000972546668, this.bk.getSpeed().getYComp(),
 				0.0000000000001);
 
 	}

@@ -27,7 +27,7 @@ public class Force extends Vector {
 		}
 
 		final Position direction = Position.getDifference(biPosition, bjPosition);
-		final double module = bi.getMass() * bj.getMass() * Force.G / distance;
+		final double module = bi.getMass() * bj.getMass() * Force.G / Math.pow(distance, 2);
 		final double lambda = module / Vector.getModule(direction.getX(), direction.getY());
 
 		return new Force(direction.getX() * lambda, direction.getY() * lambda);

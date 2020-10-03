@@ -33,46 +33,46 @@ public class ForceTest {
 
 	@Test
 	public void testGet() {
-		Assert.assertEquals("VectorX ij test", 0.2135705600000, this.forceij.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY ij test", 0.1601779200000, this.forceij.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module ij test", 0.2669632000000, this.forceij.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorX ij test", 0.0427141120000, this.forceij.getXComp(), 0.0000000000001);
+		Assert.assertEquals("VectorY ij test", 0.0320355840000, this.forceij.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module ij test", 0.0533926400000, this.forceij.getModule(), 0.0000000000001);
 
-		Assert.assertEquals("VectorX ji test", -0.2135705600000, this.forceji.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY ji test", -0.1601779200000, this.forceji.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module ji test", 0.2669632000000, this.forceji.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorX ji test", -0.0427141120000, this.forceji.getXComp(), 0.0000000000001);
+		Assert.assertEquals("VectorY ji test", -0.0320355840000, this.forceji.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module ji test", 0.0533926400000, this.forceji.getModule(), 0.0000000000001);
 
-		Assert.assertEquals("VectorX ik test", 0.4711115294118, this.forceik.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY ik test", 0.1177778823529, this.forceik.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module ik test", 0.4856106493027, this.forceik.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorX ik test", 0.1142613292477, this.forceik.getXComp(), 0.0000000000001);
+		Assert.assertEquals("VectorY ik test", 0.0285653323119, this.forceik.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module ik test", 0.1177778823529, this.forceik.getModule(), 0.0000000000001);
 
-		Assert.assertEquals("VectorX ki test", -0.4711115294118, this.forceki.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY ki test", -0.1177778823529, this.forceki.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module ki test", 0.4856106493027, this.forceki.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorX ki test", -0.1142613292477, this.forceki.getXComp(), 0.0000000000001);
+		Assert.assertEquals("VectorY ki test", -0.0285653323119, this.forceki.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module ki test", 0.1177778823529, this.forceki.getModule(), 0.0000000000001);
 
 		Assert.assertEquals("VectorX jk test", 0.0, this.forcejk.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY jk test", -2.0022240000000, this.forcejk.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module jk test", 2.0022240000000, this.forcejk.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorY jk test", -1.0011120000000, this.forcejk.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module jk test", 1.0011120000000, this.forcejk.getModule(), 0.0000000000001);
 
 		Assert.assertEquals("VectorX kj test", 0.0, this.forcekj.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY kj test", 2.0022240000000, this.forcekj.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module kj test", 2.0022240000000, this.forcekj.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorY kj test", 1.0011120000000, this.forcekj.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module kj test", 1.0011120000000, this.forcekj.getModule(), 0.0000000000001);
 	}
 
 	@Test
 	public void testSum() {
 		final Force forcei = Force.sum(this.forceij, this.forceik);
-		Assert.assertEquals("VectorX i test", 0.6846820894118, forcei.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY i test", 0.2779558023529, forcei.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module i test", 0.7389512782470, forcei.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorX i test", 0.1569754412477, forcei.getXComp(), 0.0000000000001);
+		Assert.assertEquals("VectorY i test", 0.0606009163119, forcei.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module i test", 0.1682669314297, forcei.getModule(), 0.0000000000001);
 
 		final Force forcej = Force.sum(this.forceji, this.forcejk);
-		Assert.assertEquals("VectorX i test", -0.2135705600000, forcej.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY i test", -2.1624019200000, forcej.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module i test", 2.1729230192803, forcej.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorX i test", -0.0427141120000, forcej.getXComp(), 0.0000000000001);
+		Assert.assertEquals("VectorY i test", -1.0331475840000, forcej.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module i test", 1.0340301860628, forcej.getModule(), 0.0000000000001);
 
 		final Force forcek = Force.sum(this.forceki, this.forcekj);
-		Assert.assertEquals("VectorX i test", -0.4711115294118, forcek.getXComp(), 0.0000000000001);
-		Assert.assertEquals("VectorY i test", 1.8844461176471, forcek.getYComp(), 0.0000000000001);
-		Assert.assertEquals("Module i test", 1.9424425972110, forcek.getModule(), 0.0000000000001);
+		Assert.assertEquals("VectorX i test", -0.1142613292477, forcek.getXComp(), 0.0000000000001);
+		Assert.assertEquals("VectorY i test", 0.9725466676881, forcek.getYComp(), 0.0000000000001);
+		Assert.assertEquals("Module i test", 0.9792357592493, forcek.getModule(), 0.0000000000001);
 	}
 }
