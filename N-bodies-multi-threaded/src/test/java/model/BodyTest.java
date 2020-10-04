@@ -38,7 +38,7 @@ public class BodyTest {
 	}
 
 	@Test
-	public void testMultipleApply() {
+	public void testMultipleForces() {
 		final Map<Body, Force> mapBF = new HashMap<>();
 		for (final Body b : this.bodies) {
 			mapBF.put(b, Force.sumForces(this.bodies.stream().filter(b1 -> !b1.equals(b)).map(b1 -> Force.get(b, b1))
@@ -46,32 +46,72 @@ public class BodyTest {
 		}
 		mapBF.keySet().stream().forEach(b -> b.apply(mapBF.get(b), 3.0));
 
-		Assert.assertEquals("MultipleApply bi posX test", 32.00000706389490, this.bi.getPosition().getX(),
+		Assert.assertEquals("MultipleForces bi posX test", 32.00000706389490, this.bi.getPosition().getX(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bi posY test", 5.00000272704123, this.bi.getPosition().getY(),
+		Assert.assertEquals("MultipleForces bi posY test", 5.00000272704123, this.bi.getPosition().getY(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bi speedX test", 10.00000470926320, this.bi.getSpeed().getXComp(),
+		Assert.assertEquals("MultipleForces bi speedX test", 10.00000470926320, this.bi.getSpeed().getXComp(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bi speedY test", 1.00000181802749, this.bi.getSpeed().getYComp(),
-				0.0000000000001);
-
-		Assert.assertEquals("MultipleApply bj posX test", 65.99999903893250, this.bj.getPosition().getX(),
-				0.0000000000001);
-		Assert.assertEquals("MultipleApply bj posY test", 10.99997675417940, this.bj.getPosition().getY(),
-				0.0000000000001);
-		Assert.assertEquals("MultipleApply bj speedX test", 19.99999935928830, this.bj.getSpeed().getXComp(),
-				0.0000000000001);
-		Assert.assertEquals("MultipleApply bj speedY test", 1.99998450278624, this.bj.getSpeed().getYComp(),
+		Assert.assertEquals("MultipleForces bi speedY test", 1.00000181802749, this.bi.getSpeed().getYComp(),
 				0.0000000000001);
 
-		Assert.assertEquals("MultipleApply bk posX test", 95.99999828608010, this.bk.getPosition().getX(),
+		Assert.assertEquals("MultipleForces bj posX test", 65.99999903893250, this.bj.getPosition().getX(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bk posY test", 12.00001458820000, this.bk.getPosition().getY(),
+		Assert.assertEquals("MultipleForces bj posY test", 10.99997675417940, this.bj.getPosition().getY(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bk speedX test", 29.99999885738670, this.bk.getSpeed().getXComp(),
+		Assert.assertEquals("MultipleForces bj speedX test", 19.99999935928830, this.bj.getSpeed().getXComp(),
 				0.0000000000001);
-		Assert.assertEquals("MultipleApply bk speedY test", 3.00000972546668, this.bk.getSpeed().getYComp(),
+		Assert.assertEquals("MultipleForces bj speedY test", 1.99998450278624, this.bj.getSpeed().getYComp(),
 				0.0000000000001);
 
+		Assert.assertEquals("MultipleForces bk posX test", 95.99999828608010, this.bk.getPosition().getX(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleForces bk posY test", 12.00001458820000, this.bk.getPosition().getY(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleForces bk speedX test", 29.99999885738670, this.bk.getSpeed().getXComp(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleForces bk speedY test", 3.00000972546668, this.bk.getSpeed().getYComp(),
+				0.0000000000001);
+
+	}
+
+	@Test
+	public void testMultipleApply() {
+		final Map<Body, Force> mapBF = new HashMap<>();
+		for (int i = 0; i < 2; i++) {
+			mapBF.clear();
+			for (final Body b : this.bodies) {
+				mapBF.put(b, Force.sumForces(this.bodies.stream().filter(b1 -> !b1.equals(b))
+						.map(b1 -> Force.get(b, b1)).toArray(Force[]::new)));
+			}
+			mapBF.keySet().stream().forEach(b -> b.apply(mapBF.get(b), 3.0));
+		}
+
+		Assert.assertEquals("MultipleApply bi posX test", 62.00002126291750, this.bi.getPosition().getX(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bi posY test", 8.00000819224438, this.bi.getPosition().getY(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bi speedX test", 10.00000475675190, this.bi.getSpeed().getXComp(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bi speedY test", 1.00000182544128, this.bi.getSpeed().getYComp(),
+				0.0000000000001);
+
+		Assert.assertEquals("MultipleApply bj posX test", 125.99999719192960, this.bj.getPosition().getX(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bj posY test", 16.99993026149110, this.bj.getPosition().getY(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bj speedX test", 19.99999940937640, this.bj.getSpeed().getXComp(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bj speedY test", 1.99998450208822, this.bj.getSpeed().getYComp(),
+				0.0000000000001);
+
+		Assert.assertEquals("MultipleApply bk posX test", 185.99999478440773, this.bk.getPosition().getX(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bk posY test", 21.00004376159120, this.bk.getPosition().getY(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bk speedX test", 29.99999880816510, this.bk.getSpeed().getXComp(),
+				0.0000000000001);
+		Assert.assertEquals("MultipleApply bk speedY test", 3.00000972346076, this.bk.getSpeed().getYComp(),
+				0.0000000000001);
 	}
 }
