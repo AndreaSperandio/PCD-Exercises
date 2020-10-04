@@ -13,15 +13,18 @@ public class Body {
 		this.speed = speed;
 	}
 
+	/**
+	 * Applies a force vector to the body for a certain amount of time.
+	 * This causes the body to move and to change it's speed.
+	 */
 	public Body apply(final Force force, final double deltaTime) {
-		final double accX = force.getXComp() / this.mass;
-		final double accY = force.getYComp() / this.mass;
-		final double deltaSpeedX = accX * deltaTime;
-		final double deltaSpeedY = accY * deltaTime;
-		this.position.move(new Position((deltaSpeedX / 2 + this.speed.getXComp()) * deltaTime,
-				(deltaSpeedY / 2 + this.speed.getYComp()) * deltaTime));
-		this.speed.setXComp(this.speed.getXComp() + deltaSpeedX);
-		this.speed.setYComp(this.speed.getYComp() + deltaSpeedY);
+		final Vector acceleration = Vector.multiplyScalar(force, 1 / this.mass);  // ai = Fi / mi
+		final Vector deltaSpeed = Vector.multiplyScalar(acceleration, deltaTime);  // dvi= ai * dt
+
+		// dpi = 0.5 * ai * dt2 + vi * dt = (ai * dt / 2 + vi) * dt = (dvi / 2 + vi) * dt
+		this.position
+				.move(Vector.multiplyScalar(deltaSpeed, 0.5).sum(this.speed).multiplyScalar(deltaTime).toPosition());
+		this.speed.sum(deltaSpeed);  // vi = v0i + dvi
 		return this;
 	}
 

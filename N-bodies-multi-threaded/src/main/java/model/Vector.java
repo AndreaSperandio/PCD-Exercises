@@ -10,12 +10,50 @@ public class Vector {
 		this.yComp = yComp;
 	}
 
+	/**
+	 * Return this Vector's module, as the sqrt(xComp^2 + yComp^2)
+	 */
 	public double getModule() {
-		return Vector.getModule(this.xComp, this.yComp);
+		return Math.sqrt(Math.pow(this.xComp, 2) + Math.pow(this.yComp, 2));
 	}
 
-	protected static double getModule(final double vectX, final double vectY) {
-		return Math.sqrt(Math.pow(vectX, 2) + Math.pow(vectY, 2));
+	/**
+	 * Modifies this Vector, performing a vector sum
+	 */
+	public Vector sum(final Vector vector) {
+		this.xComp += vector.xComp;
+		this.yComp += vector.yComp;
+		return this;
+	}
+
+	/**
+	 * Creates a new Vector, performing a vector sum
+	 */
+	public static Vector sum(final Vector vectori, final Vector vectorj) {
+		return new Vector(vectori.xComp + vectorj.xComp, vectori.yComp + vectorj.yComp);
+	}
+
+	/**
+	 * Modifies this Vector, performing a vector product with scalar
+	 */
+	public Vector multiplyScalar(final double scalar) {
+		this.xComp *= scalar;
+		this.yComp *= scalar;
+		return this;
+	}
+
+	/**
+	 * Creates a new Vector, performing a vector product with scalar
+	 */
+	public static Vector multiplyScalar(final Vector vector, final double scalar) {
+		return new Vector(vector.xComp * scalar, vector.yComp * scalar);
+	}
+
+	/**
+	 * Creates a new Position from the vector x and y components
+	 */
+	public Position toPosition() {
+		return new Position(this.xComp, this.yComp);
 	}
 
 	@Override

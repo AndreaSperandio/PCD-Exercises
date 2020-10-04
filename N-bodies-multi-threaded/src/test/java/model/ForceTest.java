@@ -60,17 +60,17 @@ public class ForceTest {
 
 	@Test
 	public void testSum() {
-		final Force forcei = Force.sum(this.forceij, this.forceik);
+		final Force forcei = Force.sumForces(this.forceij, this.forceik);
 		Assert.assertEquals("VectorX i test", 0.1569754412477, forcei.getXComp(), 0.0000000000001);
 		Assert.assertEquals("VectorY i test", 0.0606009163119, forcei.getYComp(), 0.0000000000001);
 		Assert.assertEquals("Module i test", 0.1682669314297, forcei.getModule(), 0.0000000000001);
 
-		final Force forcej = Force.sum(this.forceji, this.forcejk);
+		final Force forcej = Force.sumForces(this.forceji, this.forcejk);
 		Assert.assertEquals("VectorX i test", -0.0427141120000, forcej.getXComp(), 0.0000000000001);
 		Assert.assertEquals("VectorY i test", -1.0331475840000, forcej.getYComp(), 0.0000000000001);
 		Assert.assertEquals("Module i test", 1.0340301860628, forcej.getModule(), 0.0000000000001);
 
-		final Force forcek = Force.sum(this.forceki, this.forcekj);
+		final Force forcek = Force.sumForces(this.forceki, this.forcekj);
 		Assert.assertEquals("VectorX i test", -0.1142613292477, forcek.getXComp(), 0.0000000000001);
 		Assert.assertEquals("VectorY i test", 0.9725466676881, forcek.getYComp(), 0.0000000000001);
 		Assert.assertEquals("Module i test", 0.9792357592493, forcek.getModule(), 0.0000000000001);

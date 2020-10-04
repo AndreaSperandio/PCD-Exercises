@@ -11,6 +11,10 @@ public class Force extends Vector {
 		super(vectorX, vectorY);
 	}
 
+	public Force(final Vector vector) {
+		super(vector.getXComp(), vector.getYComp());
+	}
+
 	/**
 	 * Calculates and returns the Force existing between two bodies according to the
 	 * Newton's law of universal gravitation.
@@ -26,21 +30,22 @@ public class Force extends Vector {
 			return Force.NULL;
 		}
 
-		final Position direction = Position.getDifference(biPosition, bjPosition);
+		final Vector direction = Position.getDifference(biPosition, bjPosition).toVector();
 		final double module = bi.getMass() * bj.getMass() * Force.G / Math.pow(distance, 2);
-		final double lambda = module / Vector.getModule(direction.getX(), direction.getY());
 
-		return new Force(direction.getX() * lambda, direction.getY() * lambda);
+		/* Lamba is used to create a Force vector which module is exactly "module"
+		 * It's the ratio factor to be applied to the direction vector to get the Force vector */
+		final double lambda = module / direction.getModule();
+		return new Force(direction.multiplyScalar(lambda));
 	}
 
 	/**
 	 * Calculates and returns the resulting sum Force.
 	 */
-	public static Force sum(final Force... forces) {
+	public static Force sumForces(final Force... forces) {
 		if (forces == null || forces.length == 0) {
 			return Force.NULL;
 		}
-		return Arrays.asList(forces).stream().reduce(new Force(0D, 0D),
-				(fi, fj) -> new Force(fi.getXComp() + fj.getXComp(), fi.getYComp() + fj.getYComp()));
+		return Arrays.asList(forces).stream().reduce(new Force(0D, 0D), (fi, fj) -> (Force) fi.sum(fj));
 	}
 }

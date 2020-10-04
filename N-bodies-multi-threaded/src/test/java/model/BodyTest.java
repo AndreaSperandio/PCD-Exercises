@@ -41,7 +41,7 @@ public class BodyTest {
 	public void testMultipleApply() {
 		final Map<Body, Force> mapBF = new HashMap<>();
 		for (final Body b : this.bodies) {
-			mapBF.put(b, Force.sum(this.bodies.stream().filter(b1 -> !b1.equals(b)).map(b1 -> Force.get(b, b1))
+			mapBF.put(b, Force.sumForces(this.bodies.stream().filter(b1 -> !b1.equals(b)).map(b1 -> Force.get(b, b1))
 					.toArray(Force[]::new)));
 		}
 		mapBF.keySet().stream().forEach(b -> b.apply(mapBF.get(b), 3.0));

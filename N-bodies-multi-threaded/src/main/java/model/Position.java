@@ -13,11 +13,18 @@ public class Position {
 		this.y = y;
 	}
 
+	/**
+	 * Moves the current position performing a sum operation
+	 */
 	public void move(final Position deltaP) {
 		this.x += deltaP.x;
 		this.y += deltaP.y;
 	}
 
+	/**
+	 * Calculates the distance between two positions, as sqrt(dx^2+dy^2)
+	 * If this is 0, it return a value slightly greater to avoid collisions
+	 */
 	public static double getDistance(final Position pi, final Position pj) {
 		if (pi == null || pj == null) {
 			return Position.NULL_DISTANCE;
@@ -26,12 +33,22 @@ public class Position {
 		return Math.max(Math.sqrt(Math.pow(pj.x - pi.x, 2) + Math.pow(pj.y - pi.y, 2)), Position.NULL_DISTANCE);
 	}
 
+	/**
+	 * Calculates the distance between two positions, as Position(dx, dy)
+	 */
 	public static Position getDifference(final Position pi, final Position pj) {
 		if (pi == null || pj == null) {
 			return Position.NULL_POSITION;
 		}
 
 		return new Position(pj.x - pi.x, pj.y - pi.y);
+	}
+
+	/**
+	 * Creates a new Vector from the position x and y
+	 */
+	public Vector toVector() {
+		return new Vector(this.x, this.y);
 	}
 
 	@Override
