@@ -26,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import model.Body;
+import model.DurationTracker;
 import model.Force;
 import model.Position;
 import model.Vector;
@@ -68,12 +69,19 @@ public class SimulationView extends JFrame {
 	private final NBIntTextField txtDeltaTime = new NBIntTextField();
 	private final JLabel lblRefreshRate = new JLabel(SimulationView.LOC.getRes("lblRefreshRate"));
 	private final NBIntTextField txtRefreshRate = new NBIntTextField();
+	private final JLabel lblKey = new JLabel(SimulationView.LOC.getRes("lblKey"));
+	private final JLabel lblKeySize = new JLabel(
+			SimulationView.LOC.getRes("lblKeySize", SimulationView.BODY_MIN_MASS, SimulationView.BODY_MAX_MASS));
+	private final JLabel lblKeyColor = new JLabel(
+			SimulationView.LOC.getRes("lblKeyColor", SimulationView.BODY_MIN_SPEED, SimulationView.BODY_MAX_SPEED));
 
 	private final List<Body> bodies = new ArrayList<>();
 	private final List<BodyColor> colors = new ArrayList<>();
+	private int deltaTime;
+	private int refreshRate;
 
 	private Thread thread = null;
-	private boolean tStopped = false;
+	private volatile boolean tStopped = false;
 	private boolean forcePnlBodiesClear = false;
 	private boolean debug;
 
@@ -125,6 +133,7 @@ public class SimulationView extends JFrame {
 					return;
 				}
 
+				DurationTracker dt = new DurationTracker("Calculate paintings").start();
 				if (SimulationView.this.colors.isEmpty()) {
 					for (int i = 0; i < SimulationView.this.bodies.size(); i++) {
 						SimulationView.this.colors.add(new BodyColor());
@@ -145,10 +154,15 @@ public class SimulationView extends JFrame {
 							.getNew((float) (body.getSpeed().getModule() / maxModuleSpeed)));
 					g2d.fillOval((int) Math.round(position.getX()), (int) Math.round(position.getY()), size, size);
 				}
+				dt.stop();
 
+				dt = new DurationTracker("Paint bodies").start();
 				g2d.dispose();
 				super.paintComponent(g);
+				((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				((Graphics2D) g).drawImage(SimulationView.this.pnlBodiesImg, null, 0, 0);
+				dt.stop();
+				System.out.println();
 			}
 		};
 		this.add(this.pnlBodies, BorderLayout.CENTER);
@@ -176,6 +190,9 @@ public class SimulationView extends JFrame {
 		this.pnlControl.add(this.txtDeltaTime);
 		this.pnlControl.add(this.lblRefreshRate);
 		this.pnlControl.add(this.txtRefreshRate);
+		this.pnlControl.add(this.lblKey);
+		this.pnlControl.add(this.lblKeySize);
+		this.pnlControl.add(this.lblKeyColor);
 
 		final int heightComp = 30;
 		final int heightMargin = heightComp + 10;
@@ -198,6 +215,12 @@ public class SimulationView extends JFrame {
 		y += heightMargin;
 		this.lblRefreshRate.setBounds(10, y, 120, heightComp);
 		this.txtRefreshRate.setBounds(130, y, 60, heightComp);
+		y += heightMargin * 2;
+		this.lblKey.setBounds(10, y, 190, heightComp);
+		y += heightMargin + 10;
+		this.lblKeySize.setBounds(10, y, 190, heightComp * 2);
+		y += heightComp * 2 + 10;
+		this.lblKeyColor.setBounds(10, y, 190, heightComp * 2);
 
 		this.chkClearTraces.setToolTipText(SimulationView.LOC.getRes("chkClearTracesToolTip"));
 		this.lblParams.setForeground(new Color(0, 0, 139));
@@ -205,6 +228,7 @@ public class SimulationView extends JFrame {
 		this.lblNBodies.setToolTipText(SimulationView.LOC.getRes("lblNBodiesToolTip"));
 		this.lblDeltaTime.setToolTipText(SimulationView.LOC.getRes("lblDeltaTimeToolTip"));
 		this.lblRefreshRate.setToolTipText(SimulationView.LOC.getRes("lblRefreshRateToolTip"));
+		this.lblKey.setForeground(new Color(0, 0, 139));
 
 		this.btnStart.addActionListener(e -> this.btnStartActionPerformed());
 		this.btnStop.addActionListener(e -> this.btnStopActionPerformed());
@@ -220,6 +244,8 @@ public class SimulationView extends JFrame {
 				return;
 			}
 			this.createBodies();
+			this.deltaTime = this.txtDeltaTime.getInt();
+			this.refreshRate = this.txtRefreshRate.getInt();
 		}
 		this.updateButtonStatus(true, false);
 		this.start();
@@ -240,6 +266,8 @@ public class SimulationView extends JFrame {
 		this.colors.clear();
 		this.forcePnlBodiesClear = true;
 		this.pnlBodies.repaint();
+		this.lblKeyColor.setText(
+				SimulationView.LOC.getRes("lblKeyColor", SimulationView.BODY_MIN_SPEED, SimulationView.BODY_MAX_SPEED));
 		this.repaint();
 	}
 
@@ -284,6 +312,7 @@ public class SimulationView extends JFrame {
 	}
 
 	private void createBodies() {
+		final DurationTracker dt = new DurationTracker("Create bodies").start();
 		final Random random = new Random();
 		final OfDouble massGenerator = random.doubles(SimulationView.BODY_MIN_MASS, SimulationView.BODY_MAX_MASS)
 				.iterator();
@@ -297,6 +326,8 @@ public class SimulationView extends JFrame {
 					new Position(positionXGenerator.nextDouble(), positionYGenerator.nextDouble()),
 					new Vector(speedGenerator.nextDouble(), speedGenerator.nextDouble())));
 		}
+		dt.stop();
+		System.out.println();
 	}
 
 	private void start() {
@@ -305,20 +336,31 @@ public class SimulationView extends JFrame {
 			final Map<Body, Force> mapBF = new HashMap<>();
 			while (!this.tStopped) {
 				try {
+					DurationTracker dt = new DurationTracker("Calculate forces").start();
 					mapBF.clear();
 					for (final Body b : this.bodies) {
 						mapBF.put(b, Force.sumForces(this.bodies.stream().filter(b1 -> !b1.equals(b))
 								.map(b1 -> Force.get(b, b1)).toArray(Force[]::new)));
 					}
+					dt.stop();
+
+					dt = new DurationTracker("Move bodies").start();
 					mapBF.keySet().stream().forEach(b -> {
-						b.apply(mapBF.get(b), this.txtDeltaTime.getInt());
+						b.apply(mapBF.get(b), this.deltaTime);
 					});
+					dt.stop();
 
 					this.pnlBodies.repaint();
 
-					Thread.sleep(this.txtRefreshRate.getInt());
+					dt = new DurationTracker("Calculate bodies min/max speeds").start();
+					this.lblKeyColor.setText(SimulationView.LOC.getRes("lblKeyColor",
+							this.bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).min().getAsDouble(),
+							this.bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).max().getAsDouble()));
+					dt.stop();
+
+					Thread.sleep(this.refreshRate);
 				} catch (@SuppressWarnings("unused") final InterruptedException e) {
-					// Do nothing
+					continue;
 				}
 			}
 		});
