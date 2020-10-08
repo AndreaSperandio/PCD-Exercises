@@ -12,6 +12,10 @@ import model.Force;
 import model.Position;
 import model.Vector;
 
+/**
+ * Strategy that uses java (parallel) streams to achieve the goal
+ *
+ */
 public class StreamStrategy implements Strategy {
 
 	private final int nBodies;

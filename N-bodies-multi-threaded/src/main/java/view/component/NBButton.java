@@ -8,9 +8,6 @@ import javax.swing.JButton;
 public class NBButton extends JButton {
 	private static final long serialVersionUID = 7532741475194030901L;
 
-	public static final int RM_WIDTH = 90;
-	public static final int RM_HEIGHT = 35;
-
 	public NBButton(final Icon icon) {
 		super(icon);
 		this.setup();

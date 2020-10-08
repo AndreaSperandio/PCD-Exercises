@@ -44,6 +44,6 @@ public class DurationTracker {
 	}
 
 	public static long toMillsDuration(final long nanoDuratiom) {
-		return nanoDuratiom / DurationTracker.NANOS_TO_MILLIS;
+		return Math.floorDiv(nanoDuratiom, DurationTracker.NANOS_TO_MILLIS);
 	}
 }

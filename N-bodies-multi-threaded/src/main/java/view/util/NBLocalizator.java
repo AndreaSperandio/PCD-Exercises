@@ -29,7 +29,7 @@ public class NBLocalizator {
 							params[i] = String.format("%.6f", params[i]);
 						}
 					}
-					params[i] = params[i].toString();
+					params[i] = params[i] != null ? params[i].toString() : "-";
 				}
 			}
 			return MessageFormat.format(this.bundle.getString(key).replaceAll("'", "''"), params);
