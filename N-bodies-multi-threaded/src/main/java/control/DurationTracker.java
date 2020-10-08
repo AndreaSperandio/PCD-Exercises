@@ -1,4 +1,4 @@
-package model;
+package control;
 
 public class DurationTracker {
 	private static final int NANOS_TO_MILLIS = 1000000;

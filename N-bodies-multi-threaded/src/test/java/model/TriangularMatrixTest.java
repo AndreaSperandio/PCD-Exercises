@@ -3,6 +3,8 @@ package model;
 import org.junit.Assert;
 import org.junit.Test;
 
+import control.DurationTracker;
+
 public class TriangularMatrixTest {
 	private static final double NULL = 0.0;
 	private static final int SIZE = 7;
