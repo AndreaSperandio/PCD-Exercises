@@ -12,8 +12,7 @@ import model.TriangularMatrix;
 import model.Vector;
 
 /**
- * Strategy that uses java (parallel) streams to achieve the goal
- *
+ * Strategy that uses java Threads to achieve the goal
  */
 public class MultiThreadStrategy implements Strategy {
 
@@ -58,18 +57,6 @@ public class MultiThreadStrategy implements Strategy {
 		} catch (final InterruptedException e) {
 			e.printStackTrace();
 		}
-
-		/*this.bodies[0] = new Body(676538.992294392, new Position(49.999161343847234, 202.3487007018702),
-				new Vector(-8.002058364555631E-7, 5.030866834400992E-7));
-		this.bodies[1] = new Body(715151.6119889957, new Position(62.06471254509351, 228.9417147714563),
-				new Vector(-9.65404969347027E-7, -8.275612471106132E-7));
-		this.bodies[2] = new Body(806024.9552248112, new Position(184.21621494856348, 123.7150656476162),
-				new Vector(1.7412983111365325E-7, -3.742288872054757E-7));
-		this.bodies[3] = new Body(715288.5086594607, new Position(34.929262683847014, 75.14271748874748),
-				new Vector(9.377608373012914E-7, -5.943472242523683E-7));
-		this.bodies[4] = new Body(727428.5256414945, new Position(266.76016140416, 237.5366423324724),
-				new Vector(-9.648598015725882E-7, -4.698432477988046E-7));*/
-
 	}
 
 	@Override
@@ -89,17 +76,9 @@ public class MultiThreadStrategy implements Strategy {
 			for (final ForceCalculator forceCalculator : forceCalculators) {
 				forceCalculator.join();
 			}
-
-			//MultiThreadStrategy.this.matrixBF.print();
 		} catch (final InterruptedException e) {
 			e.printStackTrace();
 		}
-		/*this.mapBF.clear();
-		for (final Body b : this.bodies) {
-			this.mapBF.put(b, Force.sumForces(this.bodies.stream().parallel().filter(b1 -> !b1.equals(b))
-					.map(b1 -> Force.get(b, b1)).toArray(Force[]::new)));
-		}*/
-
 	}
 
 	@Override
@@ -122,9 +101,6 @@ public class MultiThreadStrategy implements Strategy {
 		} catch (final InterruptedException e) {
 			e.printStackTrace();
 		}
-		/*this.mapBF.keySet().stream().forEach(b -> {
-			b.apply(this.mapBF.get(b), this.deltaTime);
-		});*/
 	}
 
 	@Override
@@ -181,8 +157,6 @@ public class MultiThreadStrategy implements Strategy {
 							Force.get(MultiThreadStrategy.this.bodies[i], MultiThreadStrategy.this.bodies[j]));
 				}
 			}
-			/*this.mapBF.put(b, Force.sumForces(this.bodies.stream().parallel().filter(b1 -> !b1.equals(b))
-					.map(b1 -> Force.get(b, b1)).toArray(Force[]::new)));*/
 		}
 	}
 
@@ -214,25 +188,9 @@ public class MultiThreadStrategy implements Strategy {
 					f++;
 				}
 
-				if (f != MultiThreadStrategy.this.nBodies - 1) {
-					System.err.println("NOOOOO");
-				}
-				/*if (i == 2) {
-					MultiThreadStrategy.this.matrixBF.print();
-
-					for (int j = 0; j < forcesToSum.length; j++) {
-						System.out.println(forcesToSum[j]);
-					}
-					System.out.println("SUM1 = " + Force.sumForces(forcesToSum));
-				}*/
-
 				MultiThreadStrategy.this.bodies[i].apply(Force.sumForces(forcesToSum),
 						MultiThreadStrategy.this.deltaTime);
 			}
-
-			/*this.mapBF.keySet().stream().forEach(b -> {
-			b.apply(this.mapBF.get(b), this.deltaTime);
-			});*/
 		}
 	}
 }

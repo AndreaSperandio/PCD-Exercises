@@ -46,36 +46,11 @@ public class MultiThreadStrategyTest {
 
 		((StreamStrategy) this.sStrat).setBodies(this.mtStrat.getBodies());
 
-		/*System.out.println(this.mtStrat.getBodies().get(0));
-		System.out.println(this.mtStrat.getBodies().get(1));
-		System.out.println(this.mtStrat.getBodies().get(2));
-		System.out.println(this.mtStrat.getBodies().get(3));
-		System.out.println(this.mtStrat.getBodies().get(4));
-		System.out.println();
-		System.out.println();*/
-
 		this.mtStrat.calculateForces();
 		this.sStrat.calculateForces();
 
-		/*int k = 0;
-		for (int i = 0; i < this.nBodies; i++) {
-			for (int j = i + 1; j < this.nBodies; j++) {
-				System.out.print(Force.get(this.sStrat.getBodies().get(i), this.sStrat.getBodies().get(j)) + " ");
-				k++;
-			}
-			System.out.println();
-		}*/
-
 		this.mtStrat.moveBodies();
 		this.sStrat.moveBodies();
-
-		/*System.out.println(this.mtStrat.getBodies().get(0));
-		System.out.println(this.sStrat.getBodies().get(0));
-		System.out.println();
-		System.out.println(this.mtStrat.getBodies().get(1));
-		System.out.println(this.sStrat.getBodies().get(1));*/
-
-		//Assert.assertTrue("All bodies are moved correctly", this.mtStrat.getBodies().equals(this.sStrat.getBodies()));
 
 		final List<Body> mtStratBodies = this.mtStrat.getBodies();
 		final List<Body> sStratBodies = this.sStrat.getBodies();

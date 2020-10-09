@@ -62,8 +62,6 @@ public class StreamStrategy implements Strategy {
 
 	@Override
 	public void moveBodies() {
-		//System.out.println("SUM2 = " + this.mapBF.get(this.bodies.get(2)));
-
 		this.mapBF.keySet().stream().forEach(b -> {
 			b.apply(this.mapBF.get(b), this.deltaTime);
 		});

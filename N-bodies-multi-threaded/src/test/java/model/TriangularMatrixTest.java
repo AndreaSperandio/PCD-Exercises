@@ -34,21 +34,6 @@ public class TriangularMatrixTest {
 			}
 		}
 
-		/*for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
-			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
-				System.out.print(this.matrix[i][j] + " ");
-			}
-			System.out.println();
-		}
-
-		System.out.println();
-		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
-			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
-				System.out.print(this.tm.get(i, j) + " ");
-			}
-			System.out.println();
-		}*/
-
 		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
 			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
 				Assert.assertEquals("elem[" + i + "," + j + "]", this.tm.get(i, j), this.matrix[i][j]);

@@ -305,9 +305,6 @@ public class SimulationView extends JFrame {
 
 		this.pack();
 		this.setVisible(true);
-
-		//TODO remove
-		this.cmbStrategy.setSelectedIndex(1);
 	}
 
 	private void btnStartActionPerformed() {
