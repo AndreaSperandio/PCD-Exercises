@@ -1,0 +1,101 @@
+package model;
+
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import control.Strategy;
+import control.StrategyBuilder;
+import control.StreamStrategy;
+
+public class MultiThreadStrategyTest {
+	private int nBodies;
+	private int deltaTime;
+	private Strategy mtStrat;
+	private Strategy sStrat;
+
+	private double minMass;
+	private double maxMass;
+	private double maxPosX;
+	private double maxPosY;
+	private double minSpeed;
+	private double maxSpeed;
+
+	@Before
+	public void initialize() {
+		this.nBodies = 100;
+		this.deltaTime = 10000;
+		this.mtStrat = StrategyBuilder.buildStrategy(StrategyBuilder.MULTI_THREAD, this.nBodies, this.deltaTime);
+		this.sStrat = StrategyBuilder.buildStrategy(StrategyBuilder.STREAM, this.nBodies, this.deltaTime);
+
+		this.minMass = 100000.0;
+		this.maxMass = 1000000.0;
+		this.maxPosX = 300.0;
+		this.maxPosY = 300.0;
+		this.minSpeed = -0.000001;
+		this.maxSpeed = 0.000001;
+	}
+
+	@Test
+	public void testCorrectness() {
+		this.mtStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
+		Assert.assertTrue("All bodies are created",
+				this.mtStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
+
+		((StreamStrategy) this.sStrat).setBodies(this.mtStrat.getBodies());
+
+		/*System.out.println(this.mtStrat.getBodies().get(0));
+		System.out.println(this.mtStrat.getBodies().get(1));
+		System.out.println(this.mtStrat.getBodies().get(2));
+		System.out.println(this.mtStrat.getBodies().get(3));
+		System.out.println(this.mtStrat.getBodies().get(4));
+		System.out.println();
+		System.out.println();*/
+
+		this.mtStrat.calculateForces();
+		this.sStrat.calculateForces();
+
+		/*int k = 0;
+		for (int i = 0; i < this.nBodies; i++) {
+			for (int j = i + 1; j < this.nBodies; j++) {
+				System.out.print(Force.get(this.sStrat.getBodies().get(i), this.sStrat.getBodies().get(j)) + " ");
+				k++;
+			}
+			System.out.println();
+		}*/
+
+		this.mtStrat.moveBodies();
+		this.sStrat.moveBodies();
+
+		/*System.out.println(this.mtStrat.getBodies().get(0));
+		System.out.println(this.sStrat.getBodies().get(0));
+		System.out.println();
+		System.out.println(this.mtStrat.getBodies().get(1));
+		System.out.println(this.sStrat.getBodies().get(1));*/
+
+		//Assert.assertTrue("All bodies are moved correctly", this.mtStrat.getBodies().equals(this.sStrat.getBodies()));
+
+		final List<Body> mtStratBodies = this.mtStrat.getBodies();
+		final List<Body> sStratBodies = this.sStrat.getBodies();
+		Body msStratBody;
+		Body sStratBody;
+		for (int i = 0; i < this.nBodies; i++) {
+			msStratBody = mtStratBodies.get(i);
+			sStratBody = sStratBodies.get(i);
+
+			// Need to lower the delta because MultiThreadStrategy is more precise than StreamStrategy memorising 2 more decimals
+			Assert.assertEquals("Body Mass is moved correctly", msStratBody.getMass(), sStratBody.getMass(),
+					0.0000000000001);
+			Assert.assertEquals("Body Position x is moved correctly", msStratBody.getPosition().getX(),
+					sStratBody.getPosition().getX(), 0.00000000001);
+			Assert.assertEquals("Body Position y is moved correctly", msStratBody.getPosition().getY(),
+					sStratBody.getPosition().getY(), 0.00000000001);
+			Assert.assertEquals("Body Speed x is moved correctly", msStratBody.getSpeed().getXComp(),
+					sStratBody.getSpeed().getXComp(), 0.00000000001);
+			Assert.assertEquals("Body Speed y is moved correctly", msStratBody.getSpeed().getYComp(),
+					sStratBody.getSpeed().getYComp(), 0.00000000001);
+		}
+	}
+}

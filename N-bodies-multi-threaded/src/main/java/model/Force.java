@@ -16,6 +16,22 @@ public class Force extends Vector {
 	}
 
 	/**
+	 * Modifies this Vector, reverting its orientation
+	 */
+	@Override
+	public Force revertOrientation() {
+		super.revertOrientation();
+		return this;
+	}
+
+	/**
+	 * Creates a new Vector, reverting a vector orientation
+	 */
+	public static Force revertOrientation(final Force force) {
+		return new Force(Vector.revertOrientation(force));
+	}
+
+	/**
 	 * Calculates and returns the Force existing between two bodies according to the
 	 * Newton's law of universal gravitation.
 	 */
@@ -46,6 +62,6 @@ public class Force extends Vector {
 		if (forces == null || forces.length == 0) {
 			return Force.NULL;
 		}
-		return Arrays.asList(forces).stream().reduce(new Force(0D, 0D), (fi, fj) -> (Force) fi.sum(fj));
+		return Arrays.asList(forces).stream().reduce(new Force(0.0D, 0.0D), (fi, fj) -> (Force) fi.sum(fj));
 	}
 }

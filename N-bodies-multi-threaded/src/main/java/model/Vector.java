@@ -11,6 +11,22 @@ public class Vector {
 	}
 
 	/**
+	 * Modifies this Vector, reverting its orientation
+	 */
+	public Vector revertOrientation() {
+		this.xComp *= -1.0;
+		this.yComp *= -1.0;
+		return this;
+	}
+
+	/**
+	 * Creates a new Vector, reverting a vector orientation
+	 */
+	public static Vector revertOrientation(final Vector vector) {
+		return new Vector(vector.xComp * -1.0, vector.yComp * -1.0);
+	}
+
+	/**
 	 * Return this Vector's module, as the sqrt(xComp^2 + yComp^2)
 	 */
 	public double getModule() {

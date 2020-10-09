@@ -6,30 +6,29 @@ import org.junit.Test;
 import control.DurationTracker;
 
 public class TriangularMatrixTest {
-	private static final double NULL = 0.0;
 	private static final int SIZE = 7;
-	private static int BIG_SIZE = 30000;
+	private static int BIG_SIZE = 10000;  // equals to 100mln of Forces for matrix
 	private static final int OOM_DECREASE_SIZE = 3000;
 
 	private TriangularMatrix tm;
-	private double[][] matrix;
+	private Force[][] matrix;
 
 	private final boolean withPrints = true;
 
 	@Test
 	public void testCorrectness() {
 		//Initialization
-		this.matrix = new double[TriangularMatrixTest.SIZE][TriangularMatrixTest.SIZE];
+		this.matrix = new Force[TriangularMatrixTest.SIZE][TriangularMatrixTest.SIZE];
 		this.tm = new TriangularMatrix(TriangularMatrixTest.SIZE);
 
 		double count = 1.0;
 		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
 			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
 				if (j <= i) {
-					this.matrix[i][j] = TriangularMatrixTest.NULL;
+					this.matrix[i][j] = Force.NULL;
 				} else {
-					this.matrix[i][j] = count;
-					this.tm.set(i, j, count);
+					this.matrix[i][j] = new Force(count, count);
+					this.tm.set(i, j, new Force(count, count));
 					count++;
 				}
 			}
@@ -41,7 +40,7 @@ public class TriangularMatrixTest {
 			}
 			System.out.println();
 		}
-		
+
 		System.out.println();
 		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
 			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
@@ -52,7 +51,7 @@ public class TriangularMatrixTest {
 
 		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
 			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
-				Assert.assertEquals("elem[" + i + "," + j + "]", this.tm.get(i, j), this.matrix[i][j], 0.0000000000001);
+				Assert.assertEquals("elem[" + i + "," + j + "]", this.tm.get(i, j), this.matrix[i][j]);
 			}
 		}
 	}
@@ -62,8 +61,9 @@ public class TriangularMatrixTest {
 		try {
 			this.matrix = null;
 			this.tm = null;
-
 			Runtime.getRuntime().gc();  // Attempts to call the garbage collector
+			Thread.sleep(3000);
+
 			if (this.withPrints) {
 				System.out.println("SIZE: " + TriangularMatrixTest.BIG_SIZE);
 				System.out.println();
@@ -71,34 +71,40 @@ public class TriangularMatrixTest {
 			}
 
 			DurationTracker dt = new DurationTracker("Creation Time").start();
-			this.matrix = new double[TriangularMatrixTest.BIG_SIZE][TriangularMatrixTest.BIG_SIZE];
+			this.matrix = new Force[TriangularMatrixTest.BIG_SIZE][TriangularMatrixTest.BIG_SIZE];
 			double count = 1.0;
 			for (int i = 0; i < TriangularMatrixTest.BIG_SIZE; i++) {
 				for (int j = 0; j < TriangularMatrixTest.BIG_SIZE; j++) {
 					if (j <= i) {
-						this.matrix[i][j] = TriangularMatrixTest.NULL;
+						this.matrix[i][j] = Force.NULL;
 					} else {
-						this.matrix[i][j] = count;
+						this.matrix[i][j] = new Force(count, count);
 						count++;
 					}
 				}
 			}
 			final long matrixCreationTime = dt.stop(this.withPrints);
+			@SuppressWarnings("unused")
+			Force force;
 			dt = new DurationTracker("Row Access").start();
 			for (int i = 0; i < TriangularMatrixTest.BIG_SIZE; i++) {
 				for (int j = 0; j < TriangularMatrixTest.BIG_SIZE; j++) {
-					count = this.matrix[i][j];
+					force = this.matrix[i][j];
 				}
 			}
 			final long matrixRowAccess = dt.stop(this.withPrints);
 			dt = new DurationTracker("Column Access").start();
 			for (int i = 0; i < TriangularMatrixTest.BIG_SIZE; i++) {
 				for (int j = 0; j < TriangularMatrixTest.BIG_SIZE; j++) {
-					count = this.matrix[j][i];
+					force = this.matrix[j][i];
 				}
 			}
 			final long matrixColumnAccess = dt.stop(this.withPrints);
+
 			this.matrix = null;
+			this.tm = null;
+			Runtime.getRuntime().gc();  // Attempts to call the garbage collector
+			Thread.sleep(3000);
 
 			if (this.withPrints) {
 				System.out.println();
@@ -109,7 +115,7 @@ public class TriangularMatrixTest {
 			count = 1.0;
 			for (int i = 0; i < TriangularMatrixTest.BIG_SIZE; i++) {
 				for (int j = i + 1; j < TriangularMatrixTest.BIG_SIZE; j++) {
-					this.tm.set(i, j, count);
+					this.tm.set(i, j, new Force(count, count));
 					count++;
 				}
 			}
@@ -117,14 +123,14 @@ public class TriangularMatrixTest {
 			dt = new DurationTracker("Row Access").start();
 			for (int i = 0; i < TriangularMatrixTest.BIG_SIZE; i++) {
 				for (int j = i + 1; j < TriangularMatrixTest.BIG_SIZE; j++) {
-					count = this.tm.get(i, j);
+					force = this.tm.get(i, j);
 				}
 			}
 			final long tmRowAccess = dt.stop(this.withPrints);
 			dt = new DurationTracker("Column Access").start();
 			for (int j = 1; j < TriangularMatrixTest.BIG_SIZE; j++) {
 				for (int i = 0; i < j; i++) {
-					count = this.tm.get(j, i);
+					force = this.tm.get(i, j);
 				}
 			}
 			final long tmColumnAccess = dt.stop(this.withPrints);
@@ -149,6 +155,8 @@ public class TriangularMatrixTest {
 			System.out.println("OutOfMemoryError.... retrying with smaller size.");
 			TriangularMatrixTest.BIG_SIZE -= TriangularMatrixTest.OOM_DECREASE_SIZE;
 			this.testSpeed();
+		} catch (final InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PrimitiveIterator.OfDouble;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import model.Body;
 import model.Force;
@@ -21,7 +22,7 @@ public class StreamStrategy implements Strategy {
 	private final int nBodies;
 	private final int deltaTime;
 
-	private final List<Body> bodies;
+	private List<Body> bodies;
 	private final Map<Body, Force> mapBF;
 
 	public StreamStrategy(final int nBodies, final int deltaTime) {
@@ -61,6 +62,8 @@ public class StreamStrategy implements Strategy {
 
 	@Override
 	public void moveBodies() {
+		//System.out.println("SUM2 = " + this.mapBF.get(this.bodies.get(2)));
+
 		this.mapBF.keySet().stream().forEach(b -> {
 			b.apply(this.mapBF.get(b), this.deltaTime);
 		});
@@ -71,4 +74,13 @@ public class StreamStrategy implements Strategy {
 		return this.bodies;
 	}
 
+	/**
+	 * Used for test purposes
+	 */
+	public void setBodies(final List<Body> bodies) {
+		this.bodies = bodies.stream()
+				.map(b -> new Body(b.getMass(), new Position(b.getPosition().getX(), b.getPosition().getY()),
+						new Vector(b.getSpeed().getXComp(), b.getSpeed().getYComp())))
+				.collect(Collectors.toList());
+	}
 }
