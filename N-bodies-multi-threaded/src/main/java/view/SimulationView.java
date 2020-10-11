@@ -493,7 +493,9 @@ public class SimulationView extends JFrame {
 
 		@Override
 		public void interrupt() {
-			SimulationView.this.strategy.interrupt();
+			if (SimulationView.this.strategy != null) {
+				SimulationView.this.strategy.interrupt();
+			}
 			super.interrupt();
 		}
 	}

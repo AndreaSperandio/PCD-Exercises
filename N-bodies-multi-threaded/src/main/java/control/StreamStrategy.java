@@ -30,7 +30,7 @@ public class StreamStrategy implements Strategy {
 		this.nBodies = nBodies;
 		this.deltaTime = deltaTime;
 		this.bodies = new ArrayList<>();
-		this.mapBF = new ConcurrentHashMap<>();
+		this.mapBF = new ConcurrentHashMap<>(nBodies);
 	}
 
 	@Override
