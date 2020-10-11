@@ -19,7 +19,7 @@ import model.Vector;
  * Strategy that uses java Threads to achieve the goal
  *
  */
-public class MultiThreadStrategy extends Strategy {
+public class MultiThreadStrategy implements Strategy {
 
 	private final int nBodies;
 	private final int deltaTime;
@@ -130,7 +130,6 @@ public class MultiThreadStrategy extends Strategy {
 	public synchronized void interrupt() {
 		this.stopWorkers();
 		this.revertAppliedForces();
-		super.interrupt();
 	}
 
 	@Override

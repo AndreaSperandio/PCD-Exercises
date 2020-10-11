@@ -1,11 +1,11 @@
 package control;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PrimitiveIterator.OfDouble;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import model.Body;
@@ -17,7 +17,7 @@ import model.Vector;
  * Strategy that uses java (parallel) streams to achieve the goal
  *
  */
-public class StreamStrategy extends Strategy {
+public class StreamStrategy implements Strategy {
 
 	private final int nBodies;
 	private final int deltaTime;
@@ -30,7 +30,7 @@ public class StreamStrategy extends Strategy {
 		this.nBodies = nBodies;
 		this.deltaTime = deltaTime;
 		this.bodies = new ArrayList<>();
-		this.mapBF = new HashMap<>();
+		this.mapBF = new ConcurrentHashMap<>();
 	}
 
 	@Override
@@ -64,9 +64,14 @@ public class StreamStrategy extends Strategy {
 					.map(b1 -> Force.get(b, b1)).toArray(Force[]::new)));
 		}
 
-		this.mapBF.keySet().stream().forEach(b -> {
+		this.mapBF.keySet().stream().parallel().forEach(b -> {
 			b.apply(this.mapBF.get(b), this.deltaTime);
 		});
+	}
+
+	@Override
+	public void interrupt() {
+		// Do nothing
 	}
 
 	@Override

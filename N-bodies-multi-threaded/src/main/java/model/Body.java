@@ -18,6 +18,9 @@ public class Body {
 	 * This causes the body to move and to change it's speed.
 	 */
 	public Body apply(final Force force, final double deltaTime) {
+		if (force == null) {
+			return this;
+		}
 		final Vector acceleration = Vector.multiplyScalar(force, 1 / this.mass);  // ai = Fi / mi
 		final Vector deltaSpeed = Vector.multiplyScalar(acceleration, deltaTime);  // dvi= ai * dt
 

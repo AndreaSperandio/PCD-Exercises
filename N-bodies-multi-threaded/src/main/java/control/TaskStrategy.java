@@ -18,7 +18,7 @@ import model.Vector;
  * Strategy that uses java Executors to achieve the goal
  *
  */
-public class TaskStrategy extends Strategy {
+public class TaskStrategy implements Strategy {
 
 	private final int nBodies;
 	private final int deltaTime;
@@ -46,7 +46,7 @@ public class TaskStrategy extends Strategy {
 	}
 
 	/**
-	 * AvailableProcessors() + 1 Threads are used to create the bodies, dividing the work evenly.
+	 * An Executor using AvailableProcessors() + 1 Threads is used to create the bodies.
 	 */
 	@Override
 	public void createBodies(final double minMass, final double maxMass, final double maxPosX, final double maxPosY,
@@ -75,18 +75,8 @@ public class TaskStrategy extends Strategy {
 	}
 
 	/**
-	 * A BlockingQueue of "Forces to Calculate" is filled with nBodies Integers.
-	 * Each one stands for a job of calculation of the Force between the i-th Body and all the subsequent ones.
-	 * AvailableProcessors() + 1 Threads (Workers) are used to complete these jobs.
-	 *
-	 * When a job is completed, the Worker checks if all the required Forces to move the body have been calculated.
-	 * If so, it puts an Integer into a BlockingDeque "Bodies to Move".
-	 * Each element in this queue stands for a job of calculation of the total Force the i-th Body is subjected to and
-	 * its application.
-	 *
-	 * When the "Forces to Calculate" queue is empty, the Worker retrieves elements from the "Bodies to Move" queue.
-	 * After moving a body, the Thread updates the bodies moved count.
-	 * When all of the nBodies have been moved, all the Workers are requested to stop.
+	 * An Executor using AvailableProcessors() + 1 Threads is used to calculate the Forces between the Bodies,
+	 * to get the total Force each Body is subjected to and to move the Bodies.
 	 *
 	 * If the main Thread is requested to stop, it tries to revert any Forces already applied.
 	 */
@@ -141,7 +131,6 @@ public class TaskStrategy extends Strategy {
 	public synchronized void interrupt() {
 		this.executor.shutdownNow();
 		this.revertAppliedForces();
-		super.interrupt();
 	}
 
 	@Override
