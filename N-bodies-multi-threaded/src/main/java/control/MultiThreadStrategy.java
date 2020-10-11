@@ -130,7 +130,7 @@ public class MultiThreadStrategy implements Strategy {
 	private synchronized void forcesCalculated(final int i) {
 		this.bodyCalculatedForces[i] = true;
 
-		for (int j = this.lastReadyToMoveBody + 1; j < i; j++) {
+		for (int j = this.lastReadyToMoveBody; j < i; j++) {
 			if (this.bodyCalculatedForces[j] == false) {
 				return;
 			}
