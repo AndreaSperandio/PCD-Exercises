@@ -101,6 +101,8 @@ public class MultiThreadStrategy implements Strategy {
 	public void calculateAndMove() {
 		try {
 			// Initialization
+			this.forcesToCalculate.clear();
+			this.bodiesToMove.clear();
 			for (int i = 0; i < this.nBodies; i++) {
 				this.forcesToCalculate.offer(i);
 				this.bodyCalculatedForces[i] = false;
@@ -115,11 +117,19 @@ public class MultiThreadStrategy implements Strategy {
 			}
 
 			for (final Worker worker : this.workers) {
-				worker.join();
+				if (worker != null) {
+					worker.join();
+				}
 			}
 		} catch (@SuppressWarnings("unused") final InterruptedException e) {
-			this.revertAppliedForces();
+			this.interrupt();
 		}
+	}
+
+	@Override
+	public synchronized void interrupt() {
+		this.revertAppliedForces();
+		this.stopWorkers();
 	}
 
 	@Override
@@ -150,14 +160,21 @@ public class MultiThreadStrategy implements Strategy {
 	private synchronized void bodyMoved(final int i) {
 		this.bodiesMoved++;
 		if (this.bodiesMoved == this.nBodies) {
-			for (final Worker worker : this.workers) {
-				worker.stopped = true;
-				worker.interrupt();
+			this.stopWorkers();
+		}
+	}
+
+	private synchronized void stopWorkers() {
+		for (int i = 0; i < this.nThreads; i++) {
+			if (this.workers[i] != null) {
+				this.workers[i].stopped = true;
+				this.workers[i].interrupt();
+				this.workers[i] = null;
 			}
 		}
 	}
 
-	private void revertAppliedForces() {
+	private synchronized void revertAppliedForces() {
 		if (this.bodiesMoved == 0) {
 			return;
 		}
@@ -225,7 +242,7 @@ public class MultiThreadStrategy implements Strategy {
 			}
 
 			// Move bodies
-			while (!this.stopped) {
+			while (!this.stopped && MultiThreadStrategy.this.bodiesMoved < MultiThreadStrategy.this.nBodies) {
 				try {
 					final Integer i = this.name % 2 == 0 ? MultiThreadStrategy.this.bodiesToMove.takeFirst()
 							: MultiThreadStrategy.this.bodiesToMove.takeLast();

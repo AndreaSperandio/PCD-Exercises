@@ -311,7 +311,7 @@ public class SimulationView extends JFrame {
 		this.cmbStrategy.addItems(StrategyBuilder.getComboItems());
 
 		//TODO remove
-		this.cmbStrategy.setSelectedIndex(1);
+		this.cmbStrategy.setSelectedIndex(StrategyBuilder.MULTI_THREAD.getValue());
 
 		this.pack();
 		this.setVisible(true);
@@ -445,41 +445,57 @@ public class SimulationView extends JFrame {
 
 	private void start() {
 		this.tStopped = false;
-		this.thread = new Thread(() -> {
-			while (!this.tStopped) {
+		this.thread = new SVThread();
+		this.thread.start();
+	}
+
+	private class SVThread extends Thread {
+		@Override
+		public void run() {
+			while (!SimulationView.this.tStopped) {
 				try {
 					DurationTracker dt = new DurationTracker("Calculate & Move").start();
-					if (this.strategy == null || this.tStopped) {
+					if (SimulationView.this.strategy == null || SimulationView.this.tStopped) {
 						return;
 					}
-					this.strategy.calculateAndMove();
-					this.durationCalcAndMove = DurationTracker.toMillsDuration(dt.stop(SimulationView.DEBUG));
+					SimulationView.this.strategy.calculateAndMove();
+					SimulationView.this.durationCalcAndMove = DurationTracker
+							.toMillsDuration(dt.stop(SimulationView.DEBUG));
 
 					dt = new DurationTracker("Calculate bodies min/max speeds").start();
-					if (this.strategy == null || this.tStopped) {
+					if (SimulationView.this.strategy == null || SimulationView.this.tStopped) {
 						return;
 					}
-					final List<Body> bodies = this.strategy.getBodies();
-					this.lblKeyColor.setText(SimulationView.LOC.getRes("lblKeyColor",
+					final List<Body> bodies = SimulationView.this.strategy.getBodies();
+					SimulationView.this.lblKeyColor.setText(SimulationView.LOC.getRes("lblKeyColor",
 							bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).min().getAsDouble(),
 							bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).max().getAsDouble()));
-					this.durationCalcMinMaxSpeed = DurationTracker.toMillsDuration(dt.stop(SimulationView.DEBUG));
+					SimulationView.this.durationCalcMinMaxSpeed = DurationTracker
+							.toMillsDuration(dt.stop(SimulationView.DEBUG));
 
 					// Will cause a EDT call, it might mess the durationTotal value a bit up, but it' not significant
 					SwingUtilities.invokeLater(() -> {
-						this.pnlBodies.repaint();
+						SimulationView.this.pnlBodies.repaint();
 					});
-					this.updateLabels(false);
+					SimulationView.this.updateLabels(false);
 
-					if (this.durationTotal < this.refreshRate) {
-						Thread.sleep(this.refreshRate - this.durationTotal);
+					if (SimulationView.this.durationTotal < SimulationView.this.refreshRate) {
+						Thread.sleep(SimulationView.this.refreshRate - SimulationView.this.durationTotal);
 					}
 				} catch (@SuppressWarnings("unused") final InterruptedException e) {
+					if (SimulationView.this.strategy != null) {
+						SimulationView.this.strategy.interrupt();
+					}
 					continue;
 				}
 			}
-		});
-		this.thread.start();
+		}
+
+		@Override
+		public void interrupt() {
+			SimulationView.this.strategy.interrupt();
+			super.interrupt();
+		}
 	}
 
 	public static void main(final String[] args) {

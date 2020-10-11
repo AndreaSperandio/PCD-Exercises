@@ -17,5 +17,8 @@ public interface Strategy {
 
 	void calculateAndMove();
 
+	void interrupt();
+
 	List<Body> getBodies();
+
 }

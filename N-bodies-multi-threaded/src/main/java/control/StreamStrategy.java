@@ -70,6 +70,11 @@ public class StreamStrategy implements Strategy {
 	}
 
 	@Override
+	public void interrupt() {
+		// Do nothing
+	}
+
+	@Override
 	public List<Body> getBodies() {
 		return this.bodies;
 	}
