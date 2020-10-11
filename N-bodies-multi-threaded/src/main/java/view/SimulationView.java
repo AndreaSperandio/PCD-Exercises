@@ -43,7 +43,7 @@ public class SimulationView extends JFrame {
 	private static final boolean DEBUG = true;
 
 	private static final int MIN_BODY_SIZE = 1;
-	private static final int N_BODIES = 5000;  //TODO choose
+	private static final int N_BODIES = 1000;  //TODO choose
 	private static final int DELTA_TIME = 10000;  // seconds
 	private static final int REFRESH_RATE = 1000;  // millis
 	private static final boolean CLEAR_TRACES = true;
@@ -340,6 +340,9 @@ public class SimulationView extends JFrame {
 		this.updateGraphics(false, false);
 		if (this.strategy != null) {
 			this.strategy.setWorking(false);
+			synchronized (this.strategy) {
+				this.strategy.interrupt();
+			}
 		}
 	}
 
@@ -347,7 +350,9 @@ public class SimulationView extends JFrame {
 		this.updateGraphics(false, true);
 		if (this.strategy != null) {
 			this.strategy.terminate();
-			this.strategy.interrupt();
+			synchronized (this.strategy) {
+				this.strategy.interrupt();
+			}
 			this.strategy = null;
 		}
 		this.colors.clear();
@@ -441,7 +446,7 @@ public class SimulationView extends JFrame {
 		return true;
 	}
 
-	public long notifyBodyMoved(final long _durationCreateBodies, final long _durationCalcAndMove) {
+	public long notifyBodiesMoved(final long _durationCreateBodies, final long _durationCalcAndMove) {
 		this.durationCreateBodies = _durationCreateBodies;
 		this.durationCalcAndMove = _durationCalcAndMove;
 		final DurationTracker dt = new DurationTracker("Calculate bodies min/max speeds").start();

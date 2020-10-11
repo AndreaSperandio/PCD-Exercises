@@ -8,6 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.Semaphore;
 
 import model.Body;
 import model.Force;
@@ -37,6 +38,9 @@ public class MultiThreadStrategy extends Strategy {
 	private volatile int lastReadyToMoveBody;
 	private volatile int bodiesMoved;
 
+	private final Semaphore semaphore;
+	private boolean workersCreated;
+
 	public MultiThreadStrategy(final int nBodies, final int deltaTime) {
 		super();
 		this.nBodies = nBodies;
@@ -51,6 +55,9 @@ public class MultiThreadStrategy extends Strategy {
 		this.forcesToCalculate = new ArrayBlockingQueue<>(nBodies);
 		this.bodyCalculatedForces = new Boolean[nBodies];
 		this.bodiesToMove = new LinkedBlockingDeque<>(nBodies);
+
+		this.workersCreated = false;
+		this.semaphore = new Semaphore(0);
 	}
 
 	/**
@@ -110,17 +117,24 @@ public class MultiThreadStrategy extends Strategy {
 			}
 			this.lastReadyToMoveBody = 0;
 			this.bodiesMoved = 0;
+			this.semaphore.drainPermits();
 
-			for (int i = 0; i < this.nThreads; i++) {
-				this.workers[i] = new Worker(i);
-				this.workers[i].start();
-			}
-
-			for (final Worker worker : this.workers) {
-				if (worker != null) {
-					worker.join();
+			if (!this.workersCreated) {
+				for (int i = 0; i < this.nThreads; i++) {
+					this.workers[i] = new Worker(i);
+					this.workers[i].start();
+				}
+				this.workersCreated = true;
+			} else {
+				for (final Worker worker : this.workers) {
+					worker.paused = false;
+					synchronized (worker) {
+						worker.notify();
+					}
 				}
 			}
+
+			this.semaphore.acquire(this.nThreads);
 		} catch (@SuppressWarnings("unused") final InterruptedException e) {
 			this.interrupt();
 		}
@@ -128,9 +142,15 @@ public class MultiThreadStrategy extends Strategy {
 
 	@Override
 	public synchronized void interrupt() {
-		this.stopWorkers();
+		this.pauseWorkers();
 		this.revertAppliedForces();
 		super.interrupt();
+	}
+
+	@Override
+	public void terminate() {
+		this.stopWorkers();
+		super.terminate();
 	}
 
 	@Override
@@ -161,7 +181,16 @@ public class MultiThreadStrategy extends Strategy {
 	private synchronized void bodyMoved(final int i) {
 		this.bodiesMoved++;
 		if (this.bodiesMoved == this.nBodies) {
-			this.stopWorkers();
+			this.pauseWorkers();
+		}
+	}
+
+	private synchronized void pauseWorkers() {
+		for (int i = 0; i < this.nThreads; i++) {
+			if (this.workers[i] != null) {
+				this.workers[i].paused = true;
+				this.workers[i].interrupt();
+			}
 		}
 	}
 
@@ -218,53 +247,66 @@ public class MultiThreadStrategy extends Strategy {
 	}
 
 	private class Worker extends Thread {
+		private volatile boolean paused;
 		private volatile boolean stopped;
 		private final int name;
 
 		public Worker(final int name) {
 			this.name = name;
+			this.paused = false;
 			this.stopped = false;
 		}
 
 		@Override
 		public void run() {
-			// Calculate forces
-			while (!MultiThreadStrategy.this.forcesToCalculate.isEmpty()) {
-				final Integer i = MultiThreadStrategy.this.forcesToCalculate.poll();
-				if (i == null) {
-					continue;
-				}
+			while (!this.stopped) {
+				// Calculate forces
+				while (!MultiThreadStrategy.this.forcesToCalculate.isEmpty()) {
+					final Integer i = MultiThreadStrategy.this.forcesToCalculate.poll();
+					if (i == null) {
+						continue;
+					}
 
-				for (int j = i + 1; j < MultiThreadStrategy.this.nBodies; j++) {
-					MultiThreadStrategy.this.matrixBF.set(i, j,
-							Force.get(MultiThreadStrategy.this.bodies[i], MultiThreadStrategy.this.bodies[j]));
-				}
-				MultiThreadStrategy.this.forcesCalculated(i);
-			}
-
-			// Move bodies
-			while (!this.stopped && MultiThreadStrategy.this.bodiesMoved < MultiThreadStrategy.this.nBodies) {
-				try {
-					final Integer i = this.name % 2 == 0 ? MultiThreadStrategy.this.bodiesToMove.takeFirst()
-							: MultiThreadStrategy.this.bodiesToMove.takeLast();
-
-					final Force[] forcesToSum = new Force[MultiThreadStrategy.this.nBodies - 1];
-					int f = 0;
-					// Horizontal
 					for (int j = i + 1; j < MultiThreadStrategy.this.nBodies; j++) {
-						forcesToSum[f] = MultiThreadStrategy.this.matrixBF.get(i, j);
-						f++;
+						MultiThreadStrategy.this.matrixBF.set(i, j,
+								Force.get(MultiThreadStrategy.this.bodies[i], MultiThreadStrategy.this.bodies[j]));
 					}
-					// Vertical
-					for (int k = 0; k < i; k++) {
-						forcesToSum[f] = Force.revertOrientation(MultiThreadStrategy.this.matrixBF.get(k, i));
-						f++;
-					}
+					MultiThreadStrategy.this.forcesCalculated(i);
+				}
 
-					MultiThreadStrategy.this.backupBodies[i] = MultiThreadStrategy.this.bodies[i];
-					MultiThreadStrategy.this.bodies[i].apply(Force.sumForces(forcesToSum),
-							MultiThreadStrategy.this.deltaTime);
-					MultiThreadStrategy.this.bodyMoved(i);
+				// Move bodies
+				while (!this.paused && MultiThreadStrategy.this.bodiesMoved < MultiThreadStrategy.this.nBodies) {
+					try {
+						final Integer i = this.name % 2 == 0 ? MultiThreadStrategy.this.bodiesToMove.takeFirst()
+								: MultiThreadStrategy.this.bodiesToMove.takeLast();
+
+						final Force[] forcesToSum = new Force[MultiThreadStrategy.this.nBodies - 1];
+						int f = 0;
+						// Horizontal
+						for (int j = i + 1; j < MultiThreadStrategy.this.nBodies; j++) {
+							forcesToSum[f] = MultiThreadStrategy.this.matrixBF.get(i, j);
+							f++;
+						}
+						// Vertical
+						for (int k = 0; k < i; k++) {
+							forcesToSum[f] = Force.revertOrientation(MultiThreadStrategy.this.matrixBF.get(k, i));
+							f++;
+						}
+
+						MultiThreadStrategy.this.backupBodies[i] = MultiThreadStrategy.this.bodies[i];
+						MultiThreadStrategy.this.bodies[i].apply(Force.sumForces(forcesToSum),
+								MultiThreadStrategy.this.deltaTime);
+						MultiThreadStrategy.this.bodyMoved(i);
+					} catch (@SuppressWarnings("unused") final InterruptedException e) {
+						continue;
+					}
+				}
+
+				try {
+					MultiThreadStrategy.this.semaphore.release();
+					synchronized (this) {
+						this.wait();
+					}
 				} catch (@SuppressWarnings("unused") final InterruptedException e) {
 					continue;
 				}

@@ -47,8 +47,7 @@ public abstract class Strategy extends Thread {
 				this.calculateAndMove();
 				final long durationCalcAndMove = DurationTracker
 						.toMillsDuration(dtCM.stop(this.simulationView.isDebug()));
-
-				final long durationTotal = this.simulationView.notifyBodyMoved(durationCreateBodies,
+				final long durationTotal = this.simulationView.notifyBodiesMoved(durationCreateBodies,
 						durationCalcAndMove);
 
 				if (durationTotal < this.refreshRate) {
@@ -71,7 +70,6 @@ public abstract class Strategy extends Thread {
 
 	public void setWorking(final boolean working) {
 		this.working = working;
-		this.interrupt();
 	}
 
 	public void terminate() {

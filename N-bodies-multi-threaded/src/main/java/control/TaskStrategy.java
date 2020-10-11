@@ -6,6 +6,7 @@ import java.util.PrimitiveIterator.OfDouble;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import model.Body;
@@ -32,6 +33,10 @@ public class TaskStrategy extends Strategy {
 	private final Boolean[] bodyCalculatedForces;
 	private volatile int bodiesMoved;
 
+	private final Semaphore semaphore;
+	private boolean executorCreated;
+	private volatile boolean interrupted;
+
 	public TaskStrategy(final int nBodies, final int deltaTime) {
 		super();
 
@@ -43,10 +48,13 @@ public class TaskStrategy extends Strategy {
 		this.nThreads = Runtime.getRuntime().availableProcessors() + 1;
 
 		this.bodyCalculatedForces = new Boolean[nBodies];
+
+		this.executorCreated = false;
+		this.semaphore = new Semaphore(0);
 	}
 
 	/**
-	 * AvailableProcessors() + 1 Threads are used to create the bodies, dividing the work evenly.
+	 * An Executor using AvailableProcessors() + 1 Threads is used to create the bodies.
 	 */
 	@Override
 	public void createBodies(final double minMass, final double maxMass, final double maxPosX, final double maxPosY,
@@ -75,73 +83,88 @@ public class TaskStrategy extends Strategy {
 	}
 
 	/**
-	 * A BlockingQueue of "Forces to Calculate" is filled with nBodies Integers.
-	 * Each one stands for a job of calculation of the Force between the i-th Body and all the subsequent ones.
-	 * AvailableProcessors() + 1 Threads (Workers) are used to complete these jobs.
-	 *
-	 * When a job is completed, the Worker checks if all the required Forces to move the body have been calculated.
-	 * If so, it puts an Integer into a BlockingDeque "Bodies to Move".
-	 * Each element in this queue stands for a job of calculation of the total Force the i-th Body is subjected to and
-	 * its application.
-	 *
-	 * When the "Forces to Calculate" queue is empty, the Worker retrieves elements from the "Bodies to Move" queue.
-	 * After moving a body, the Thread updates the bodies moved count.
-	 * When all of the nBodies have been moved, all the Workers are requested to stop.
+	 * An Executor using AvailableProcessors() + 1 Threads is used to calculate the Forces between the Bodies,
+	 * to get the total Force each Body is subjected to and to move the Bodies.
 	 *
 	 * If the main Thread is requested to stop, it tries to revert any Forces already applied.
 	 */
 	@Override
 	public void calculateAndMove() {
-		try {
-			// Initialization
-			for (int i = 0; i < this.nBodies; i++) {
-				this.bodyCalculatedForces[i] = false;
-				this.backupBodies[i] = null;
-			}
-			this.bodiesMoved = 0;
+		this.semaphore.drainPermits();
 
+		if (!this.executorCreated) {
 			this.executor = Executors.newFixedThreadPool(this.nThreads);
 			this.executor.execute(() -> {
-				// Calculate forces
-				for (int i = 0; i < this.nBodies; i++) {
-					for (int j = i + 1; j < TaskStrategy.this.nBodies; j++) {
-						TaskStrategy.this.matrixBF.set(i, j,
-								Force.get(TaskStrategy.this.bodies[i], TaskStrategy.this.bodies[j]));
+				while (true) {
+					// Initialization
+					for (int i = 0; i < this.nBodies; i++) {
+						this.bodyCalculatedForces[i] = false;
+						this.backupBodies[i] = null;
 					}
-				}
+					this.bodiesMoved = 0;
 
-				// Move bodies
-				for (int i = 0; i < this.nBodies; i++) {
-					final Force[] forcesToSum = new Force[TaskStrategy.this.nBodies - 1];
-					int f = 0;
-					// Horizontal
-					for (int j = i + 1; j < TaskStrategy.this.nBodies; j++) {
-						forcesToSum[f] = TaskStrategy.this.matrixBF.get(i, j);
-						f++;
-					}
-					// Vertical
-					for (int k = 0; k < i; k++) {
-						forcesToSum[f] = Force.revertOrientation(TaskStrategy.this.matrixBF.get(k, i));
-						f++;
+					// Calculate forces
+					for (int i = 0; i < this.nBodies; i++) {
+						for (int j = i + 1; j < TaskStrategy.this.nBodies; j++) {
+							TaskStrategy.this.matrixBF.set(i, j,
+									Force.get(TaskStrategy.this.bodies[i], TaskStrategy.this.bodies[j]));
+						}
 					}
 
-					TaskStrategy.this.backupBodies[i] = TaskStrategy.this.bodies[i];
-					TaskStrategy.this.bodies[i].apply(Force.sumForces(forcesToSum), TaskStrategy.this.deltaTime);
+					// Move bodies
+					for (int i = 0; i < this.nBodies; i++) {
+						final Force[] forcesToSum = new Force[TaskStrategy.this.nBodies - 1];
+						int f = 0;
+						// Horizontal
+						for (int j = i + 1; j < TaskStrategy.this.nBodies; j++) {
+							forcesToSum[f] = TaskStrategy.this.matrixBF.get(i, j);
+							f++;
+						}
+						// Vertical
+						for (int k = 0; k < i; k++) {
+							forcesToSum[f] = Force.revertOrientation(TaskStrategy.this.matrixBF.get(k, i));
+							f++;
+						}
+
+						TaskStrategy.this.backupBodies[i] = TaskStrategy.this.bodies[i];
+						TaskStrategy.this.bodies[i].apply(Force.sumForces(forcesToSum), TaskStrategy.this.deltaTime);
+					}
+
+					try {
+						synchronized (this.executor) {
+							this.semaphore.release();
+							this.goingToWait();
+							this.executor.wait();
+						}
+					} catch (@SuppressWarnings("unused") final InterruptedException e) {
+						continue;
+					}
 				}
 			});
+			this.executorCreated = true;
+		} else {
+			synchronized (this.executor) {
+				this.executor.notify();
+			}
+		}
 
-			this.executor.shutdown();
-			this.executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		try {
+			this.semaphore.acquire();
 		} catch (@SuppressWarnings("unused") final InterruptedException e) {
 			this.interrupt();
 		}
 	}
 
 	@Override
-	public synchronized void interrupt() {
-		this.executor.shutdownNow();
-		this.revertAppliedForces();
+	public void interrupt() {
+		this.interrupted = true;
 		super.interrupt();
+	}
+
+	@Override
+	public void terminate() {
+		this.executor.shutdownNow();
+		super.terminate();
 	}
 
 	@Override
@@ -149,7 +172,14 @@ public class TaskStrategy extends Strategy {
 		return Arrays.asList(this.bodies);
 	}
 
-	private synchronized void revertAppliedForces() {
+	private void goingToWait() {
+		if (this.interrupted) {
+			this.revertAppliedForces();
+			this.interrupted = false;
+		}
+	}
+
+	private void revertAppliedForces() {
 		if (this.bodiesMoved == 0) {
 			return;
 		}
