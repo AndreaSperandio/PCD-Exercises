@@ -24,7 +24,7 @@ public class MultiThreadStrategy implements Strategy {
 	private final int nBodies;
 	private final int deltaTime;
 
-	private final Body[] bodies;
+	private Body[] bodies;
 	private final Body[] backupBodies;
 	private final TriangularMatrix matrixBF;
 	private final int nThreads;
@@ -128,8 +128,8 @@ public class MultiThreadStrategy implements Strategy {
 
 	@Override
 	public synchronized void interrupt() {
-		this.revertAppliedForces();
 		this.stopWorkers();
+		this.revertAppliedForces();
 	}
 
 	@Override
@@ -269,5 +269,15 @@ public class MultiThreadStrategy implements Strategy {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Used for test purposes
+	 */
+	public void setBodies(final List<Body> bodies) {
+		this.bodies = bodies.stream()
+				.map(b -> new Body(b.getMass(), new Position(b.getPosition().getX(), b.getPosition().getY()),
+						new Vector(b.getSpeed().getXComp(), b.getSpeed().getYComp())))
+				.toArray(Body[]::new);
 	}
 }

@@ -311,7 +311,7 @@ public class SimulationView extends JFrame {
 		this.cmbStrategy.addItems(StrategyBuilder.getComboItems());
 
 		//TODO remove
-		this.cmbStrategy.setSelectedIndex(StrategyBuilder.MULTI_THREAD.getValue());
+		this.cmbStrategy.setSelectedIndex(StrategyBuilder.TASK.getValue());
 
 		this.pack();
 		this.setVisible(true);
