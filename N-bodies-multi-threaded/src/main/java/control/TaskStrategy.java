@@ -18,7 +18,7 @@ import model.Vector;
  * Strategy that uses java Executors to achieve the goal
  *
  */
-public class TaskStrategy implements Strategy {
+public class TaskStrategy extends Strategy {
 
 	private final int nBodies;
 	private final int deltaTime;
@@ -141,6 +141,7 @@ public class TaskStrategy implements Strategy {
 	public synchronized void interrupt() {
 		this.executor.shutdownNow();
 		this.revertAppliedForces();
+		super.interrupt();
 	}
 
 	@Override

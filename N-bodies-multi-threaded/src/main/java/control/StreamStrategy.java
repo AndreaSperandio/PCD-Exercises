@@ -17,7 +17,7 @@ import model.Vector;
  * Strategy that uses java (parallel) streams to achieve the goal
  *
  */
-public class StreamStrategy implements Strategy {
+public class StreamStrategy extends Strategy {
 
 	private final int nBodies;
 	private final int deltaTime;
@@ -67,11 +67,6 @@ public class StreamStrategy implements Strategy {
 		this.mapBF.keySet().stream().forEach(b -> {
 			b.apply(this.mapBF.get(b), this.deltaTime);
 		});
-	}
-
-	@Override
-	public void interrupt() {
-		// Do nothing
 	}
 
 	@Override

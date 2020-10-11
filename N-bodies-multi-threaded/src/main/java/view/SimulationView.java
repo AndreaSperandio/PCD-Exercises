@@ -92,8 +92,6 @@ public class SimulationView extends JFrame {
 	private int refreshRate;
 
 	private Strategy strategy = null;
-	private Thread thread = null;
-	private volatile boolean tStopped = false;
 	private boolean forcePnlBodiesClear = false;
 
 	private volatile Long durationCreateBodies = null;
@@ -102,7 +100,7 @@ public class SimulationView extends JFrame {
 	private volatile Long durationCalcPaintings = null;
 	private volatile Long durationPaintBodies = null;
 	private volatile Long durationTotal = null;
-	private volatile Long durationMean = null;
+	private volatile Double durationMean = null;
 	private volatile int cycles;
 
 	public SimulationView() {
@@ -322,36 +320,36 @@ public class SimulationView extends JFrame {
 			if (!this.checkParams()) {
 				return;
 			}
+			this.refreshRate = this.txtRefreshRate.getInt();
 
-			final DurationTracker dt = new DurationTracker("Create bodies").start();
 			this.strategy = StrategyBuilder.buildStrategy(this.cmbStrategy.getSelectedItemKey(),
 					this.txtNBodies.getInt(), this.txtDeltaTime.getInt());
-			this.strategy.createBodies(SimulationView.BODY_MIN_MASS, SimulationView.BODY_MAX_MASS,
-					this.pnlBodies.getSize().getWidth(), this.pnlBodies.getSize().getHeight(),
-					SimulationView.BODY_MIN_SPEED, SimulationView.BODY_MAX_SPEED);
-			this.durationCreateBodies = DurationTracker.toMillsDuration(dt.stop(SimulationView.DEBUG));
-			if (SimulationView.DEBUG) {
-				System.out.println();
+			this.strategy.setViewListener(this, this.refreshRate);
+			this.strategy.start();
+		} else {
+			this.strategy.setWorking(true);
+			synchronized (this.strategy) {
+				this.strategy.notify();
 			}
-
-			this.refreshRate = this.txtRefreshRate.getInt();
 		}
+
 		this.updateGraphics(true, false);
-		this.start();
 	}
 
 	private void btnStopActionPerformed() {
 		this.updateGraphics(false, false);
-		if (this.thread != null) {
-			this.tStopped = true;
-			this.thread.interrupt();
-			this.thread = null;
+		if (this.strategy != null) {
+			this.strategy.setWorking(false);
 		}
 	}
 
 	private void btnClearActionPerformed() {
 		this.updateGraphics(false, true);
-		this.strategy = null;
+		if (this.strategy != null) {
+			this.strategy.terminate();
+			this.strategy.interrupt();
+			this.strategy = null;
+		}
 		this.colors.clear();
 		this.forcePnlBodiesClear = true;
 
@@ -388,15 +386,15 @@ public class SimulationView extends JFrame {
 			this.durationCalcMinMaxSpeed = null;
 			this.durationCalcPaintings = null;
 			this.durationPaintBodies = null;
-			this.durationMean = 0L;
-			this.cycles = 1;
+			this.durationMean = 0D;
+			this.cycles = 0;
 		} else {
 			//durationTotal += this.durationCreateBodies != null ? this.durationCreateBodies : 0L;
 			this.durationTotal += this.durationCalcAndMove != null ? this.durationCalcAndMove : 0L;
 			this.durationTotal += this.durationCalcMinMaxSpeed != null ? this.durationCalcMinMaxSpeed : 0L;
 			this.durationTotal += this.durationCalcPaintings != null ? this.durationCalcPaintings : 0L;
 			this.durationTotal += this.durationPaintBodies != null ? this.durationPaintBodies : 0L;
-			this.durationMean = this.durationMean == 0L ? this.durationTotal
+			this.durationMean = this.durationMean == 0D ? this.durationTotal
 					: (this.durationMean * this.cycles + this.durationTotal) / (this.cycles + 1);
 			this.cycles++;
 		}
@@ -414,7 +412,7 @@ public class SimulationView extends JFrame {
 		this.lblDurationTotal.setText(SimulationView.LOC.getRes("lblDurationTotal",
 				this.durationTotal == 0L ? (Long) null : this.durationTotal));
 		this.lblDurationMean.setText(SimulationView.LOC.getRes("lblDurationMean",
-				this.durationMean == 0L ? (Long) null : this.durationMean));
+				this.durationMean == 0D ? (Long) null : (Long) this.durationMean.longValue()));
 
 		this.lblDurationTotal.setForeground(this.durationTotal > this.refreshRate ? NBColor.LBL_RED : NBColor.LBL_GREY);
 		this.lblDurationTotalErr.setVisible(this.durationTotal > this.refreshRate);
@@ -443,59 +441,55 @@ public class SimulationView extends JFrame {
 		return true;
 	}
 
-	private void start() {
-		this.tStopped = false;
-		this.thread = new SVThread();
-		this.thread.start();
+	public long notifyBodyMoved(final long _durationCreateBodies, final long _durationCalcAndMove) {
+		this.durationCreateBodies = _durationCreateBodies;
+		this.durationCalcAndMove = _durationCalcAndMove;
+		final DurationTracker dt = new DurationTracker("Calculate bodies min/max speeds").start();
+		final List<Body> bodies = SimulationView.this.strategy.getBodies();
+		SimulationView.this.lblKeyColor.setText(SimulationView.LOC.getRes("lblKeyColor",
+				bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).min().getAsDouble(),
+				bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).max().getAsDouble()));
+		SimulationView.this.durationCalcMinMaxSpeed = DurationTracker.toMillsDuration(dt.stop(SimulationView.DEBUG));
+
+		// Will cause an EDT call, it might mess the durationTotal value a bit up, but it' not significant
+		SwingUtilities.invokeLater(() -> {
+			SimulationView.this.pnlBodies.repaint();
+		});
+		SimulationView.this.updateLabels(false);
+		return this.durationTotal;
 	}
 
-	private class SVThread extends Thread {
-		@Override
-		public void run() {
-			while (!SimulationView.this.tStopped) {
-				try {
-					DurationTracker dt = new DurationTracker("Calculate & Move").start();
-					if (SimulationView.this.strategy == null || SimulationView.this.tStopped) {
-						return;
-					}
-					SimulationView.this.strategy.calculateAndMove();
-					SimulationView.this.durationCalcAndMove = DurationTracker
-							.toMillsDuration(dt.stop(SimulationView.DEBUG));
+	@SuppressWarnings("static-method")
+	public double getBodyMinMass() {
+		return SimulationView.BODY_MIN_MASS;
+	}
 
-					dt = new DurationTracker("Calculate bodies min/max speeds").start();
-					if (SimulationView.this.strategy == null || SimulationView.this.tStopped) {
-						return;
-					}
-					final List<Body> bodies = SimulationView.this.strategy.getBodies();
-					SimulationView.this.lblKeyColor.setText(SimulationView.LOC.getRes("lblKeyColor",
-							bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).min().getAsDouble(),
-							bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).max().getAsDouble()));
-					SimulationView.this.durationCalcMinMaxSpeed = DurationTracker
-							.toMillsDuration(dt.stop(SimulationView.DEBUG));
+	@SuppressWarnings("static-method")
+	public double getBodyMaxMass() {
+		return SimulationView.BODY_MAX_MASS;
+	}
 
-					// Will cause a EDT call, it might mess the durationTotal value a bit up, but it' not significant
-					SwingUtilities.invokeLater(() -> {
-						SimulationView.this.pnlBodies.repaint();
-					});
-					SimulationView.this.updateLabels(false);
+	public double getPositionMaxX() {
+		return this.pnlBodies.getSize().getWidth();
+	}
 
-					if (SimulationView.this.durationTotal < SimulationView.this.refreshRate) {
-						Thread.sleep(SimulationView.this.refreshRate - SimulationView.this.durationTotal);
-					}
-				} catch (@SuppressWarnings("unused") final InterruptedException e) {
-					if (SimulationView.this.strategy != null) {
-						SimulationView.this.strategy.interrupt();
-					}
-					continue;
-				}
-			}
-		}
+	public double getPositionMaxY() {
+		return this.pnlBodies.getSize().getHeight();
+	}
 
-		@Override
-		public void interrupt() {
-			SimulationView.this.strategy.interrupt();
-			super.interrupt();
-		}
+	@SuppressWarnings("static-method")
+	public double getBodyMinSpeed() {
+		return SimulationView.BODY_MIN_SPEED;
+	}
+
+	@SuppressWarnings("static-method")
+	public double getBodyMaxSpeed() {
+		return SimulationView.BODY_MAX_SPEED;
+	}
+
+	@SuppressWarnings("static-method")
+	public boolean isDebug() {
+		return SimulationView.DEBUG;
 	}
 
 	public static void main(final String[] args) {
