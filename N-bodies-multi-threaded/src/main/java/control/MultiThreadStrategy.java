@@ -34,6 +34,7 @@ public class MultiThreadStrategy implements Strategy {
 	private final BlockingQueue<Integer> forcesToCalculate;
 	private final Boolean[] bodyCalculatedForces;
 	private final BlockingDeque<Integer> bodiesToMove;
+	private volatile int lastReadyToMoveBody;
 	private volatile int bodiesMoved;
 
 	public MultiThreadStrategy(final int nBodies, final int deltaTime) {
@@ -105,6 +106,7 @@ public class MultiThreadStrategy implements Strategy {
 				this.bodyCalculatedForces[i] = false;
 				this.backupBodies[i] = null;
 			}
+			this.lastReadyToMoveBody = 0;
 			this.bodiesMoved = 0;
 
 			for (int i = 0; i < this.nThreads; i++) {
@@ -127,14 +129,21 @@ public class MultiThreadStrategy implements Strategy {
 
 	private synchronized void forcesCalculated(final int i) {
 		this.bodyCalculatedForces[i] = true;
-		if (Arrays.stream(this.bodyCalculatedForces).parallel().limit(i).filter(b -> b == true).count() == i) {
-			this.bodiesToMove.offer(i);
 
-			int next = i + 1;
-			while (next < this.nBodies && this.bodyCalculatedForces[next]) {
-				this.bodiesToMove.offer(next);
-				next++;
+		for (int j = this.lastReadyToMoveBody + 1; j < i; j++) {
+			if (this.bodyCalculatedForces[j] == false) {
+				return;
 			}
+		}
+
+		this.bodiesToMove.offer(i);
+		this.lastReadyToMoveBody = i;
+
+		int next = i + 1;
+		while (next < this.nBodies && this.bodyCalculatedForces[next]) {
+			this.bodiesToMove.offer(next);
+			this.lastReadyToMoveBody = next;
+			next++;
 		}
 	}
 
