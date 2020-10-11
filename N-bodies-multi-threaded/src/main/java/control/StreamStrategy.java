@@ -50,18 +50,20 @@ public class StreamStrategy implements Strategy {
 		}
 	}
 
+	/**
+	 * Calculates all existing Forces between any couple of Bodies and stores into a map the total Force each body is
+	 * subjected to.
+	 *
+	 * For each Body, then, it applies the total Force for a deltaTime time.
+	 */
 	@Override
-	public void calculateForces() {
+	public void calculateAndMove() {
 		this.mapBF.clear();
 		for (final Body b : this.bodies) {
 			this.mapBF.put(b, Force.sumForces(this.bodies.stream().parallel().filter(b1 -> !b1.equals(b))
 					.map(b1 -> Force.get(b, b1)).toArray(Force[]::new)));
 		}
 
-	}
-
-	@Override
-	public void moveBodies() {
 		this.mapBF.keySet().stream().forEach(b -> {
 			b.apply(this.mapBF.get(b), this.deltaTime);
 		});

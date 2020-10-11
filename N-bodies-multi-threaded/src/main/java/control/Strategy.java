@@ -15,9 +15,7 @@ public interface Strategy {
 	void createBodies(final double minMass, final double maxMass, final double maxPosX, final double maxPosY,
 			final double minSpeed, final double maxSpeed);
 
-	void calculateForces();
-
-	void moveBodies();
+	void calculateAndMove();
 
 	List<Body> getBodies();
 }

@@ -46,11 +46,8 @@ public class MultiThreadStrategyTest {
 
 		((StreamStrategy) this.sStrat).setBodies(this.mtStrat.getBodies());
 
-		this.mtStrat.calculateForces();
-		this.sStrat.calculateForces();
-
-		this.mtStrat.moveBodies();
-		this.sStrat.moveBodies();
+		this.mtStrat.calculateAndMove();
+		this.sStrat.calculateAndMove();
 
 		final List<Body> mtStratBodies = this.mtStrat.getBodies();
 		final List<Body> sStratBodies = this.sStrat.getBodies();
