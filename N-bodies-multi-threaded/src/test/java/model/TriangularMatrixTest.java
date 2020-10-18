@@ -128,8 +128,8 @@ public class TriangularMatrixTest {
 				System.out.println("-> TRIANGULAR MATRIX OVERALL: " + DurationTracker.toMillsDuration(tmOverall));
 			}
 
-			Assert.assertTrue("TM create/read operations are overall faster with many elems",
-					matrixOverall > tmOverall);
+			Assert.assertTrue("TM read operations are overall faster with many elems",
+					matrixOverall - matrixCreationTime > tmOverall - tmCreationTime);
 
 			if (this.withPrints) {
 				System.out.println("-> TRIANGULAR MATRIX is " + (int) ((float) matrixOverall / tmOverall * 100)
