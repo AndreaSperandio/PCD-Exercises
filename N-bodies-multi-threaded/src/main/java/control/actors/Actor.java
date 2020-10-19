@@ -4,8 +4,10 @@ import java.util.PrimitiveIterator.OfDouble;
 import java.util.Random;
 
 import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import control.actors.MainActor.BodiesCreated;
+import control.actors.ActorMsg.CalculateForces;
+import control.actors.ActorMsg.CreateBodies;
+import control.actors.ActorMsg.MoveBodies;
+import control.actors.MainActorMsg.BodiesCreated;
 import model.Body;
 import model.Force;
 import model.Position;
@@ -13,117 +15,63 @@ import model.TriangularMatrix;
 import model.Vector;
 
 public class Actor extends AbstractActor {
-
-	public static class CreateBodies {
-		private final ActorRef replyTo;
-		private final control.actors.MainActor.CreateBodies createBodies;
-		private final int from;
-		private final int nBodies;
-
-		public CreateBodies(final ActorRef actorRef, final control.actors.MainActor.CreateBodies createBodies,
-				final int from, final int nBodies) {
-			this.replyTo = actorRef;
-			this.createBodies = createBodies;
-			this.from = from;
-			this.nBodies = nBodies;
-		}
-	}
-
-	public static class CalculateForces {
-		private final ActorRef replyTo;
-		private final control.actors.MainActor.MoveBodies moveBodies;
-		private final Body[] bodies;
-		private final int from;
-		private final int nBodies;
-
-		public CalculateForces(final ActorRef actorRef, final control.actors.MainActor.MoveBodies moveBodies,
-				final Body[] bodies, final int from, final int nBodies) {
-			this.replyTo = actorRef;
-			this.moveBodies = moveBodies;
-			this.bodies = bodies;
-			this.from = from;
-			this.nBodies = nBodies;
-		}
-	}
-
-	public static class MoveBodies {
-		private final ActorRef replyTo;
-		private final control.actors.MainActor.MoveBodies moveBodies;
-		private final Body[] bodies;
-		private final TriangularMatrix matrixBF;
-		private final int from;
-		private final int nBodies;
-		private final int deltaTime;
-
-		public MoveBodies(final ActorRef actorRef, final control.actors.MainActor.MoveBodies moveBodies,
-				final Body[] bodies, final TriangularMatrix matrixBF, final int from, final int nBodies,
-				final int deltaTime) {
-			this.replyTo = actorRef;
-			this.moveBodies = moveBodies;
-			this.bodies = bodies;
-			this.matrixBF = matrixBF;
-			this.from = from;
-			this.nBodies = nBodies;
-			this.deltaTime = deltaTime;
-		}
-	}
+	private Body[] bodies;
 
 	public Actor() {
 		super();
 	}
 
 	private void onCreateBodies(final CreateBodies createBodies) {
-		final control.actors.MainActor.CreateBodies values = createBodies.createBodies;
+		final MainActorMsg.CreateBodies values = createBodies.getCreateBodies();
 		final Random random = new Random();
 		final OfDouble massGenerator = random.doubles(values.getMinMass(), values.getMaxMass()).iterator();
 		final OfDouble positionXGenerator = random.doubles(0.0, values.getMaxPosX()).iterator();
 		final OfDouble positionYGenerator = random.doubles(0.0, values.getMaxPosY()).iterator();
 		final OfDouble speedGenerator = random.doubles(values.getMinSpeed(), values.getMaxSpeed()).iterator();
 
-		final int nBodies = createBodies.nBodies;
-		final Body[] bodies = new Body[nBodies];
+		final int nBodies = createBodies.getnBodies();
+		final Body[] newBodies = new Body[nBodies];
 		for (int i = 0; i < nBodies; i++) {
-			bodies[i] = new Body(massGenerator.nextDouble(),
+			newBodies[i] = new Body(massGenerator.nextDouble(),
 					new Position(positionXGenerator.nextDouble(), positionYGenerator.nextDouble()),
 					new Vector(speedGenerator.nextDouble(), speedGenerator.nextDouble()));
 		}
 
-		createBodies.replyTo.tell(new BodiesCreated(values.getCreationFuture(), bodies, createBodies.from),
+		createBodies.getReplyTo().tell(new BodiesCreated(values.getCreationFuture(), newBodies, createBodies.getFrom()),
 				this.getContext().getSelf());
 	}
 
 	private void onCalculateForces(final CalculateForces calculateForces) {
-		final Body[] bodies = calculateForces.bodies;
-		final int from = calculateForces.from;
-		final int nBodies = calculateForces.nBodies;
+		this.bodies = calculateForces.getBodies();
+		final int from = calculateForces.getFrom();
+		final int nBodies = calculateForces.getnBodies();
 
-		final TriangularMatrix matrixBF = new TriangularMatrix(bodies.length - from);
+		final TriangularMatrix matrixBF = new TriangularMatrix(this.bodies.length - from);
 
 		for (int i = from; i < from + nBodies; i++) {
-			for (int j = i + 1; j < bodies.length; j++) {
-				matrixBF.set(i - from, j - from, Force.get(bodies[i], bodies[j]));
+			for (int j = i + 1; j < this.bodies.length; j++) {
+				matrixBF.set(i - from, j - from, Force.get(this.bodies[i], this.bodies[j]));
 			}
 		}
 
-		calculateForces.replyTo.tell(
-				new MainActor.ForcesCalculated(calculateForces.moveBodies, matrixBF, from, nBodies),
+		calculateForces.getReplyTo().tell(
+				new MainActorMsg.ForcesCalculated(calculateForces.getMoveBodies(), matrixBF, from, nBodies),
 				this.getContext().getSelf());
 	}
 
 	private void onMoveBodies(final MoveBodies moveBodies) {
-		final Body[] bodies = moveBodies.bodies;
-		final TriangularMatrix matrixBF = moveBodies.matrixBF;
-		final int from = moveBodies.from;
-		final int nBodies = moveBodies.nBodies;
-		final int deltaTime = moveBodies.deltaTime;
+		final TriangularMatrix matrixBF = moveBodies.getMatrixBF();
+		final int from = moveBodies.getFrom();
+		final int nBodies = moveBodies.getnBodies();
+		final int deltaTime = moveBodies.getDeltaTime();
 
 		final Body[] newBodies = new Body[nBodies];
 
 		for (int i = from; i < from + nBodies; i++) {
-			final Force[] forcesToSum = new Force[bodies.length - 1];
+			final Force[] forcesToSum = new Force[this.bodies.length - 1];
 			int f = 0;
 			// Horizontal
-			for (int j = i + 1; j < bodies.length; j++) {
+			for (int j = i + 1; j < this.bodies.length; j++) {
 				forcesToSum[f] = matrixBF.get(i, j);
 				f++;
 			}
@@ -133,10 +81,11 @@ public class Actor extends AbstractActor {
 				f++;
 			}
 
-			newBodies[i - from] = bodies[i].apply(Force.sumForces(forcesToSum), deltaTime);
+			newBodies[i - from] = this.bodies[i].apply(Force.sumForces(forcesToSum), deltaTime);
 		}
 
-		moveBodies.replyTo.tell(new MainActor.BodiesMoved(moveBodies.moveBodies.getMoveFuture(), newBodies, from),
+		moveBodies.getReplyTo().tell(
+				new MainActorMsg.BodiesMoved(moveBodies.getMoveBodies().getMoveFuture(), newBodies, from),
 				this.getContext().getSelf());
 	}
 

@@ -8,6 +8,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import control.actors.MainActor;
+import control.actors.MainActorMsg;
 import model.Body;
 
 /**
@@ -23,6 +24,7 @@ public class ActorStrategy implements Strategy {
 	private final ActorRef mainActor;
 
 	private Body[] bodies;
+	private volatile boolean interrupted;
 
 	public ActorStrategy(final int nBodies, final int deltaTime) {
 		super();
@@ -34,6 +36,7 @@ public class ActorStrategy implements Strategy {
 		this.mainActor = this.system.actorOf(Props.create(MainActor.class, this.nBodies, this.deltaTime), "mainActor");
 
 		this.bodies = new Body[nBodies];
+		this.interrupted = false;
 	}
 
 	/**
@@ -44,8 +47,8 @@ public class ActorStrategy implements Strategy {
 			final double minSpeed, final double maxSpeed) {
 
 		final CompletableFuture<Body[]> future = new CompletableFuture<>();
-		this.mainActor.tell(new MainActor.CreateBodies(future, minMass, maxMass, maxPosX, maxPosY, minSpeed, maxSpeed),
-				null);
+		this.mainActor.tell(
+				new MainActorMsg.CreateBodies(future, minMass, maxMass, maxPosX, maxPosY, minSpeed, maxSpeed), null);
 		this.bodies = future.join();
 	}
 
@@ -59,13 +62,18 @@ public class ActorStrategy implements Strategy {
 	public void calculateAndMove() {
 
 		final CompletableFuture<Body[]> future = new CompletableFuture<>();
-		this.mainActor.tell(new MainActor.MoveBodies(future), null);
-		this.bodies = future.join();
+		this.mainActor.tell(new MainActorMsg.MoveBodies(future), null);
+		if (!this.interrupted) {
+			this.bodies = future.join();
+		} else {
+			this.mainActor.tell(new MainActorMsg.SetBodies(this.bodies), null);
+			this.interrupted = false;
+		}
 	}
 
 	@Override
 	public synchronized void interrupt() {
-		// TODO
+		this.interrupted = true;
 	}
 
 	@Override
