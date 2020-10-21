@@ -32,3 +32,8 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.2.3'
     testImplementation 'com.typesafe.akka:akka-actor-testkit-typed_2.13:2.6.10'
 }
+
+test{
+  minHeapSize = "512m"
+  maxHeapSize = "4G"
+}
