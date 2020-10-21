@@ -49,12 +49,12 @@ public class MainActor extends AbstractActor {
 		int firstBody = 0;
 		for (int i = 0; i < this.actors.size() - 1; i++) {
 			this.actors.get(i).tell(new ActorMsg.CreateBodies(this.getSelf(), createBodies, firstBody, nBodiesPerActor),
-					this.getContext().getSelf());
+					this.getSelf());
 			firstBody += nBodiesPerActor;
 		}
 		this.actors.get(this.actors.size() - 1).tell(
 				new ActorMsg.CreateBodies(this.getSelf(), createBodies, firstBody, this.nBodies - firstBody),
-				this.getContext().getSelf());
+				this.getSelf());
 	}
 
 	private void onBodiesCreated(final BodiesCreated bodiesCreated) {
@@ -76,14 +76,24 @@ public class MainActor extends AbstractActor {
 
 		final int nBodiesPerActor = this.nBodies / MainActor.N_ACTORS;
 		int firstBody = 0;
-		for (int i = 0; i < this.actors.size() - 1; i++) {
-			this.actors.get(i).tell(
-					new ActorMsg.CalculateForces(this.getSelf(), moveBodies, this.bodies, firstBody, nBodiesPerActor),
-					this.getContext().getSelf());
+		/*for (int i = 0; i < this.actors.size() - 1; i++) {
+			this.actors.get(i)
+					.tell(new ActorMsg.CalculateForces(this.getSelf(), moveBodies,
+							Arrays.copyOfRange(this.bodies, firstBody, this.bodies.length), firstBody, nBodiesPerActor),
+							this.getSelf());
 			firstBody += nBodiesPerActor;
 		}
 		this.actors.get(this.actors.size() - 1).tell(new ActorMsg.CalculateForces(this.getSelf(), moveBodies,
-				this.bodies, firstBody, this.nBodies - firstBody), this.getContext().getSelf());
+				Arrays.copyOfRange(this.bodies, firstBody, this.bodies.length), firstBody, this.nBodies - firstBody),
+				this.getSelf());*/
+		for (int i = 0; i < this.actors.size() - 1; i++) {
+			this.actors.get(i).tell(
+					new ActorMsg.CalculateForces(this.getSelf(), moveBodies, this.bodies, firstBody, nBodiesPerActor),
+					this.getSelf());
+			firstBody += nBodiesPerActor;
+		}
+		this.actors.get(this.actors.size() - 1).tell(new ActorMsg.CalculateForces(this.getSelf(), moveBodies,
+				this.bodies, firstBody, this.nBodies - firstBody), this.getSelf());
 	}
 
 	private void onForcesCalculated(final ForcesCalculated forcesCalculated) {
@@ -109,13 +119,20 @@ public class MainActor extends AbstractActor {
 
 		final int nBodiesPerActor = this.nBodies / MainActor.N_ACTORS;
 		int firstBody = 0;
+		/*for (int i = 0; i < this.actors.size() - 1; i++) {
+			this.actors.get(i)
+					.tell(new ActorMsg.MoveBodies(this.getSelf(), moveBodies,
+							TriangularMatrix.copyOfRange(this.matrixBF, firstBody + nBodiesPerActor), firstBody,
+							nBodiesPerActor, this.deltaTime), this.getSelf());
+			firstBody += nBodiesPerActor;
+		}*/
 		for (int i = 0; i < this.actors.size() - 1; i++) {
 			this.actors.get(i).tell(new ActorMsg.MoveBodies(this.getSelf(), moveBodies, this.matrixBF, firstBody,
-					nBodiesPerActor, this.deltaTime), this.getContext().getSelf());
+					nBodiesPerActor, this.deltaTime), this.getSelf());
 			firstBody += nBodiesPerActor;
 		}
 		this.actors.get(this.actors.size() - 1).tell(new ActorMsg.MoveBodies(this.getSelf(), moveBodies, this.matrixBF,
-				firstBody, this.nBodies - firstBody, this.deltaTime), this.getContext().getSelf());
+				firstBody, this.nBodies - firstBody, this.deltaTime), this.getSelf());
 	}
 
 	private void onBodiesMoved(final BodiesMoved bodiesMoved) {

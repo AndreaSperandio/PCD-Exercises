@@ -7,10 +7,12 @@ import control.DurationTracker;
 
 public class TriangularMatrixTest {
 	private static final int SIZE = 7;
+	private static final int N_ROWS = 3;
 	private static int BIG_SIZE = 10000;  // equals to 100mln of Forces for matrix
 	private static final int OOM_DECREASE_SIZE = 3000;
 
 	private TriangularMatrix tm;
+	private TriangularMatrix tmNRows;
 	private Force[][] matrix;
 
 	private final boolean withPrints = true;
@@ -37,6 +39,39 @@ public class TriangularMatrixTest {
 		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
 			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
 				Assert.assertEquals("elem[" + i + "," + j + "]", this.tm.get(i, j), this.matrix[i][j]);
+			}
+		}
+	}
+
+	@Test
+	public void testNRowsCorrectness() {
+		//Initialization
+		this.tm = new TriangularMatrix(TriangularMatrixTest.SIZE);
+		this.tmNRows = new TriangularMatrix(TriangularMatrixTest.N_ROWS, TriangularMatrixTest.SIZE);
+
+		double count = 1.0;
+		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
+			for (int j = +1; j < TriangularMatrixTest.SIZE; j++) {
+				this.tm.set(i, j, new Force(count, count));
+				if (i < TriangularMatrixTest.N_ROWS) {
+					this.tmNRows.set(i, j, new Force(count, count));
+				}
+				count++;
+			}
+		}
+
+		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
+			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
+				Assert.assertEquals("NRows_elem[" + i + "," + j + "]", this.tmNRows.get(i, j),
+						i < TriangularMatrixTest.N_ROWS ? this.tm.get(i, j) : Force.NULL);
+			}
+		}
+
+		this.tmNRows = TriangularMatrix.copyOfRange(this.tm, TriangularMatrixTest.N_ROWS);
+		for (int i = 0; i < TriangularMatrixTest.SIZE; i++) {
+			for (int j = 0; j < TriangularMatrixTest.SIZE; j++) {
+				Assert.assertEquals("CopyOf_elem[" + i + "," + j + "]", this.tmNRows.get(i, j),
+						j > i && i < TriangularMatrixTest.N_ROWS ? this.tm.get(i, j) : Force.NULL);
 			}
 		}
 	}

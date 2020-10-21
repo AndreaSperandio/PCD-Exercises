@@ -38,7 +38,7 @@ public class Actor extends AbstractActor {
 		}
 
 		createBodies.getReplyTo().tell(new BodiesCreated(values.getCreationFuture(), newBodies, createBodies.getFrom()),
-				this.getContext().getSelf());
+				this.getSelf());
 	}
 
 	private void onCalculateForces(final CalculateForces calculateForces) {
@@ -46,6 +46,13 @@ public class Actor extends AbstractActor {
 		final int from = calculateForces.getFrom();
 		final int nBodies = calculateForces.getnBodies();
 
+		/*final TriangularMatrix matrixBF = new TriangularMatrix(nBodies, this.bodies.length);
+		
+		for (int i = 0; i < nBodies; i++) {
+			for (int j = i + 1; j < this.bodies.length; j++) {
+				matrixBF.set(i, j, Force.get(this.bodies[i], this.bodies[j]));
+			}
+		}*/
 		final TriangularMatrix matrixBF = new TriangularMatrix(this.bodies.length - from);
 
 		for (int i = from; i < from + nBodies; i++) {
@@ -56,7 +63,7 @@ public class Actor extends AbstractActor {
 
 		calculateForces.getReplyTo().tell(
 				new MainActorMsg.ForcesCalculated(calculateForces.getMoveBodies(), matrixBF, from, nBodies),
-				this.getContext().getSelf());
+				this.getSelf());
 	}
 
 	private void onMoveBodies(final MoveBodies moveBodies) {
@@ -66,6 +73,23 @@ public class Actor extends AbstractActor {
 		final int deltaTime = moveBodies.getDeltaTime();
 
 		final Body[] newBodies = new Body[nBodies];
+
+		/*final int rowSize = matrixBF.getRowSize();
+		for (int i = from; i < from + nBodies; i++) {
+			final Force[] forcesToSum = new Force[rowSize - 1];
+			int f = 0;
+			// Horizontal
+			for (int j = i + 1; j < rowSize; j++) {
+				forcesToSum[f] = matrixBF.get(i, j);
+				f++;
+			}
+			// Vertical
+			for (int k = 0; k < i; k++) {
+				forcesToSum[f] = Force.revertOrientation(matrixBF.get(k, i));
+				f++;
+			}
+			newBodies[i - from] = this.bodies[i - from].apply(Force.sumForces(forcesToSum), deltaTime);
+		}*/
 
 		for (int i = from; i < from + nBodies; i++) {
 			final Force[] forcesToSum = new Force[this.bodies.length - 1];
@@ -86,7 +110,7 @@ public class Actor extends AbstractActor {
 
 		moveBodies.getReplyTo().tell(
 				new MainActorMsg.BodiesMoved(moveBodies.getMoveBodies().getMoveFuture(), newBodies, from),
-				this.getContext().getSelf());
+				this.getSelf());
 	}
 
 	@Override
