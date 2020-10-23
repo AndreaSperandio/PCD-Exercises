@@ -311,7 +311,7 @@ public class SimulationView extends JFrame {
 		this.cmbStrategy.addItems(StrategyBuilder.getComboItems());
 
 		//TODO remove
-		this.cmbStrategy.setSelectedIndex(StrategyBuilder.ACTOR.getValue());
+		this.cmbStrategy.setSelectedIndex(StrategyBuilder.DISTRIBUTED.getValue());
 
 		this.pack();
 		this.setVisible(true);
@@ -351,6 +351,7 @@ public class SimulationView extends JFrame {
 
 	private void btnClearActionPerformed() {
 		this.updateGraphics(false, true);
+		this.strategy.clear();
 		this.strategy = null;
 		this.colors.clear();
 		this.forcePnlBodiesClear = true;

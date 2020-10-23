@@ -39,9 +39,6 @@ public class ActorStrategy implements Strategy {
 		this.interrupted = false;
 	}
 
-	/**
-	 * An Executor using AvailableProcessors() + 1 Threads is used to create the bodies.
-	 */
 	@Override
 	public void createBodies(final double minMass, final double maxMass, final double maxPosX, final double maxPosY,
 			final double minSpeed, final double maxSpeed) {
@@ -52,12 +49,6 @@ public class ActorStrategy implements Strategy {
 		this.bodies = future.join();
 	}
 
-	/**
-	 * An Executor using AvailableProcessors() + 1 Threads is used to calculate the Forces between the Bodies,
-	 * to get the total Force each Body is subjected to and to move the Bodies.
-	 *
-	 * If the main Thread is requested to stop, it tries to revert any Forces already applied.
-	 */
 	@Override
 	public void calculateAndMove() {
 
@@ -74,6 +65,11 @@ public class ActorStrategy implements Strategy {
 	@Override
 	public synchronized void interrupt() {
 		this.interrupted = true;
+	}
+
+	@Override
+	public synchronized void clear() {
+		this.system.terminate();
 	}
 
 	@Override

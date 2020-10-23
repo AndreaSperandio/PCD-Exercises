@@ -30,7 +30,7 @@ public class MultiThreadStrategy implements Strategy {
 	private final int nThreads;
 	private final int bodiesPerThread;
 
-	final Worker[] workers;
+	private Worker[] workers;
 	private final BlockingQueue<Integer> forcesToCalculate;
 	private final Boolean[] bodyCalculatedForces;
 	private final BlockingDeque<Integer> bodiesToMove;
@@ -130,6 +130,11 @@ public class MultiThreadStrategy implements Strategy {
 	public synchronized void interrupt() {
 		this.stopWorkers();
 		this.revertAppliedForces();
+	}
+
+	@Override
+	public synchronized void clear() {
+		this.workers = null;
 	}
 
 	@Override

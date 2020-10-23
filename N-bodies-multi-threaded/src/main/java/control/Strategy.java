@@ -19,6 +19,8 @@ public interface Strategy {
 
 	void interrupt();
 
+	void clear();
+
 	List<Body> getBodies();
 
 }

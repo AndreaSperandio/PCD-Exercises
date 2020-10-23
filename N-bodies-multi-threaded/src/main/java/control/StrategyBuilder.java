@@ -6,7 +6,7 @@ import java.util.List;
 import view.component.NBComboBoxItem;
 
 public enum StrategyBuilder {
-	STREAM(0), MULTI_THREAD(1), TASK(2), ACTOR(3);
+	STREAM(0), MULTI_THREAD(1), TASK(2), ACTOR(3), DISTRIBUTED(4);
 
 	private int value;
 
@@ -25,6 +25,8 @@ public enum StrategyBuilder {
 			return "TASK";
 		case ACTOR:
 			return "ACTOR";
+		case DISTRIBUTED:
+			return "DISTRIBUTED";
 		default:
 			return "ERR";
 		}
@@ -40,6 +42,8 @@ public enum StrategyBuilder {
 			return new TaskStrategy(nBodies, deltaTime);
 		case ACTOR:
 			return new ActorStrategy(nBodies, deltaTime);
+		case DISTRIBUTED:
+			return new DistributedStrategy(nBodies, deltaTime);
 		default:
 			return new StreamStrategy(nBodies, deltaTime);
 		}
@@ -51,6 +55,7 @@ public enum StrategyBuilder {
 		l.add(new NBComboBoxItem<>(MULTI_THREAD, MULTI_THREAD.toString()));
 		l.add(new NBComboBoxItem<>(TASK, TASK.toString()));
 		l.add(new NBComboBoxItem<>(ACTOR, ACTOR.toString()));
+		l.add(new NBComboBoxItem<>(DISTRIBUTED, DISTRIBUTED.toString()));
 		return l;
 	}
 

@@ -75,6 +75,11 @@ public class StreamStrategy implements Strategy {
 	}
 
 	@Override
+	public synchronized void clear() {
+		// Do nothing
+	}
+
+	@Override
 	public List<Body> getBodies() {
 		return this.bodies;
 	}

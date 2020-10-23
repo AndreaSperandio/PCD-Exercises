@@ -134,6 +134,11 @@ public class TaskStrategy implements Strategy {
 	}
 
 	@Override
+	public synchronized void clear() {
+		this.executor = null;
+	}
+
+	@Override
 	public List<Body> getBodies() {
 		return Arrays.asList(this.bodies);
 	}
