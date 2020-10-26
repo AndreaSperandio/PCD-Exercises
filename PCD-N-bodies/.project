@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>N-bodies-multi-threaded</name>
-	<comment>Project N-bodies-multi-threaded created by Buildship.</comment>
+	<name>PCD-N-bodies</name>
+	<comment>Project PCD-N-bodies created by Buildship.</comment>
 	<projects>
 	</projects>
 	<buildSpec>
