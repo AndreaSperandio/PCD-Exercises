@@ -9,6 +9,9 @@ import model.Body;
  * - create bodies
  * - calculate the forces between the bodies
  * - move the bodies
+ *
+ * @author Andrea Sperandio
+ *
  */
 public interface Strategy {
 

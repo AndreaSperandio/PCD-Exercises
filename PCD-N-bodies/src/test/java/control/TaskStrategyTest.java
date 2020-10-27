@@ -1,4 +1,4 @@
-package model;
+package control;
 
 import java.util.List;
 
@@ -7,14 +7,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import control.MultiThreadStrategy;
-import control.Strategy;
-import control.StrategyBuilder;
+import model.Body;
 
-public class ActorStrategyTest {
+public class TaskStrategyTest {
 	private int nBodies;
 	private int deltaTime;
-	private Strategy aStrat;
+	private Strategy tStrat;
 	private Strategy mtStrat;
 
 	private double minMass;
@@ -28,7 +26,7 @@ public class ActorStrategyTest {
 	public void initialize() {
 		this.nBodies = 1000;
 		this.deltaTime = 10000;
-		this.aStrat = StrategyBuilder.buildStrategy(StrategyBuilder.ACTOR, this.nBodies, this.deltaTime);
+		this.tStrat = StrategyBuilder.buildStrategy(StrategyBuilder.TASK, this.nBodies, this.deltaTime);
 		this.mtStrat = StrategyBuilder.buildStrategy(StrategyBuilder.MULTI_THREAD, this.nBodies, this.deltaTime);
 
 		this.minMass = 100000.0;
@@ -41,17 +39,16 @@ public class ActorStrategyTest {
 
 	@Test
 	public void testCorrectness() {
-		this.aStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
-
+		this.tStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
 		Assert.assertTrue("All bodies are created",
-				this.aStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
+				this.tStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
 
-		((MultiThreadStrategy) this.mtStrat).setBodies(this.aStrat.getBodies());
+		((MultiThreadStrategy) this.mtStrat).setBodies(this.tStrat.getBodies());
 
-		this.aStrat.calculateAndMove();
+		this.tStrat.calculateAndMove();
 		this.mtStrat.calculateAndMove();
 
-		final List<Body> mtStratBodies = this.aStrat.getBodies();
+		final List<Body> mtStratBodies = this.tStrat.getBodies();
 		final List<Body> sStratBodies = this.mtStrat.getBodies();
 		Body msStratBody;
 		Body sStratBody;
@@ -79,8 +76,8 @@ public class ActorStrategyTest {
 		this.mtStrat.clear();
 		this.mtStrat = null;
 
-		this.aStrat.interrupt();
-		this.aStrat.clear();
-		this.aStrat = null;
+		this.tStrat.interrupt();
+		this.tStrat.clear();
+		this.tStrat = null;
 	}
 }

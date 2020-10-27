@@ -19,6 +19,8 @@ import model.Vector;
  * and applying them to the bodies.
  * The recognised messages are those listed in the ActorMsg Interface.
  *
+ * @author Andrea Sperandio
+ *
  */
 public class Actor extends AbstractActor {
 	private Body[] bodies;
@@ -55,7 +57,7 @@ public class Actor extends AbstractActor {
 		final int nBodies = calculateForces.getnBodies();
 
 		/*final TriangularMatrix matrixBF = new TriangularMatrix(nBodies, this.bodies.length);
-		
+
 		for (int i = 0; i < nBodies; i++) {
 			for (int j = i + 1; j < this.bodies.length; j++) {
 				matrixBF.set(i, j, Force.get(this.bodies[i], this.bodies[j]));

@@ -18,6 +18,8 @@ import model.Vector;
 /**
  * Strategy that uses java Threads to achieve the goal
  *
+ * @author Andrea Sperandio
+ *
  */
 public class MultiThreadStrategy implements Strategy {
 

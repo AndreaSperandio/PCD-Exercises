@@ -7,6 +7,8 @@ import model.TriangularMatrix;
 /**
  * Messages that are recognised by the Actor Class.
  *
+ * @author Andrea Sperandio
+ *
  */
 public interface ActorMsg {
 	/**

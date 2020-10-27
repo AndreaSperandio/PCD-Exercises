@@ -19,6 +19,8 @@ import model.Body;
 /**
  * Strategy that uses Akka Distributed Actors to achieve the goal
  *
+ * @author Andrea Sperandio
+ *
  */
 public class DistributedStrategy implements Strategy {
 

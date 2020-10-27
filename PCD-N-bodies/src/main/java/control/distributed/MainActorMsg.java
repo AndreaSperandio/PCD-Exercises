@@ -8,6 +8,8 @@ import model.TriangularMatrix;
 /**
  * Messages that are recognised by the MainActor Class.
  *
+ * @author Andrea Sperandio
+ *
  */
 public interface MainActorMsg {
 	/**

@@ -17,6 +17,8 @@ import model.Vector;
 /**
  * Strategy that uses java Executors to achieve the goal
  *
+ * @author Andrea Sperandio
+ *
  */
 public class TaskStrategy implements Strategy {
 

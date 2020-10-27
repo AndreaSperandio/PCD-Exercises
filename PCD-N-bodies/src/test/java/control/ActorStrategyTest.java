@@ -1,4 +1,4 @@
-package model;
+package control;
 
 import java.util.List;
 
@@ -7,14 +7,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import control.MultiThreadStrategy;
-import control.Strategy;
-import control.StrategyBuilder;
+import model.Body;
 
-public class DistributedStrategyTest {
+public class ActorStrategyTest {
 	private int nBodies;
 	private int deltaTime;
-	private Strategy dStrat;
+	private Strategy aStrat;
 	private Strategy mtStrat;
 
 	private double minMass;
@@ -28,7 +26,7 @@ public class DistributedStrategyTest {
 	public void initialize() {
 		this.nBodies = 1000;
 		this.deltaTime = 10000;
-		this.dStrat = StrategyBuilder.buildStrategy(StrategyBuilder.DISTRIBUTED, this.nBodies, this.deltaTime);
+		this.aStrat = StrategyBuilder.buildStrategy(StrategyBuilder.ACTOR, this.nBodies, this.deltaTime);
 		this.mtStrat = StrategyBuilder.buildStrategy(StrategyBuilder.MULTI_THREAD, this.nBodies, this.deltaTime);
 
 		this.minMass = 100000.0;
@@ -41,17 +39,17 @@ public class DistributedStrategyTest {
 
 	@Test
 	public void testCorrectness() {
-		this.dStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
+		this.aStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
 
 		Assert.assertTrue("All bodies are created",
-				this.dStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
+				this.aStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
 
-		((MultiThreadStrategy) this.mtStrat).setBodies(this.dStrat.getBodies());
+		((MultiThreadStrategy) this.mtStrat).setBodies(this.aStrat.getBodies());
 
-		this.dStrat.calculateAndMove();
+		this.aStrat.calculateAndMove();
 		this.mtStrat.calculateAndMove();
 
-		final List<Body> mtStratBodies = this.dStrat.getBodies();
+		final List<Body> mtStratBodies = this.aStrat.getBodies();
 		final List<Body> sStratBodies = this.mtStrat.getBodies();
 		Body msStratBody;
 		Body sStratBody;
@@ -79,8 +77,8 @@ public class DistributedStrategyTest {
 		this.mtStrat.clear();
 		this.mtStrat = null;
 
-		this.dStrat.interrupt();
-		this.dStrat.clear();
-		this.dStrat = null;
+		this.aStrat.interrupt();
+		this.aStrat.clear();
+		this.aStrat = null;
 	}
 }

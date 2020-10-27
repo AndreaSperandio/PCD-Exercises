@@ -1,4 +1,4 @@
-package model;
+package control;
 
 import java.util.List;
 
@@ -7,15 +7,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import control.Strategy;
-import control.StrategyBuilder;
-import control.StreamStrategy;
+import model.Body;
 
-public class MultiThreadStrategyTest {
+public class DistributedStrategyTest {
 	private int nBodies;
 	private int deltaTime;
+	private Strategy dStrat;
 	private Strategy mtStrat;
-	private Strategy sStrat;
 
 	private double minMass;
 	private double maxMass;
@@ -26,10 +24,10 @@ public class MultiThreadStrategyTest {
 
 	@Before
 	public void initialize() {
-		this.nBodies = 100;
+		this.nBodies = 1000;
 		this.deltaTime = 10000;
+		this.dStrat = StrategyBuilder.buildStrategy(StrategyBuilder.DISTRIBUTED, this.nBodies, this.deltaTime);
 		this.mtStrat = StrategyBuilder.buildStrategy(StrategyBuilder.MULTI_THREAD, this.nBodies, this.deltaTime);
-		this.sStrat = StrategyBuilder.buildStrategy(StrategyBuilder.STREAM, this.nBodies, this.deltaTime);
 
 		this.minMass = 100000.0;
 		this.maxMass = 1000000.0;
@@ -41,17 +39,18 @@ public class MultiThreadStrategyTest {
 
 	@Test
 	public void testCorrectness() {
-		this.mtStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
+		this.dStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
+
 		Assert.assertTrue("All bodies are created",
-				this.mtStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
+				this.dStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
 
-		((StreamStrategy) this.sStrat).setBodies(this.mtStrat.getBodies());
+		((MultiThreadStrategy) this.mtStrat).setBodies(this.dStrat.getBodies());
 
+		this.dStrat.calculateAndMove();
 		this.mtStrat.calculateAndMove();
-		this.sStrat.calculateAndMove();
 
-		final List<Body> mtStratBodies = this.mtStrat.getBodies();
-		final List<Body> sStratBodies = this.sStrat.getBodies();
+		final List<Body> mtStratBodies = this.dStrat.getBodies();
+		final List<Body> sStratBodies = this.mtStrat.getBodies();
 		Body msStratBody;
 		Body sStratBody;
 		for (int i = 0; i < this.nBodies; i++) {
@@ -74,12 +73,12 @@ public class MultiThreadStrategyTest {
 
 	@After
 	public void tearDown() {
-		this.sStrat.interrupt();
-		this.sStrat.clear();
-		this.sStrat = null;
-
 		this.mtStrat.interrupt();
 		this.mtStrat.clear();
 		this.mtStrat = null;
+
+		this.dStrat.interrupt();
+		this.dStrat.clear();
+		this.dStrat = null;
 	}
 }

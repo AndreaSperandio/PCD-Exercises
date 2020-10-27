@@ -20,6 +20,8 @@ import model.TriangularMatrix;
  * creating bodies, calculating the forces and applying them to the bodies.
  * The recognised messages are those listed in the MainActorMsg Interface.
  *
+ * @author Andrea Sperandio
+ *
  */
 public class MainActor extends AbstractActor {
 	private static final int N_ACTORS = 10;

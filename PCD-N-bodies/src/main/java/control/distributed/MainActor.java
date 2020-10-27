@@ -27,6 +27,8 @@ import model.TriangularMatrix;
  * creating bodies, calculating the forces and applying them to the bodies.
  * The recognised messages are of the MainActorMsg type.
  *
+ * @author Andrea Sperandio
+ *
  */
 public class MainActor extends AbstractBehavior<MainActorMsg> {
 	private static final int N_ACTORS = 10;

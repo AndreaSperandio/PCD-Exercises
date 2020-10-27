@@ -23,6 +23,8 @@ import model.Vector;
  * and applying them to the bodies.
  * The recognised messages are of the ActorMsg type.
  *
+ * @author Andrea Sperandio
+ *
  */
 public class Actor extends AbstractBehavior<ActorMsg> {
 	private Body[] bodies;

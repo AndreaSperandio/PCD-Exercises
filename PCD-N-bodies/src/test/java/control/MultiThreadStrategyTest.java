@@ -1,4 +1,4 @@
-package model;
+package control;
 
 import java.util.List;
 
@@ -7,15 +7,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import control.MultiThreadStrategy;
-import control.Strategy;
-import control.StrategyBuilder;
+import model.Body;
 
-public class TaskStrategyTest {
+public class MultiThreadStrategyTest {
 	private int nBodies;
 	private int deltaTime;
-	private Strategy tStrat;
 	private Strategy mtStrat;
+	private Strategy sStrat;
 
 	private double minMass;
 	private double maxMass;
@@ -26,10 +24,10 @@ public class TaskStrategyTest {
 
 	@Before
 	public void initialize() {
-		this.nBodies = 1000;
+		this.nBodies = 100;
 		this.deltaTime = 10000;
-		this.tStrat = StrategyBuilder.buildStrategy(StrategyBuilder.TASK, this.nBodies, this.deltaTime);
 		this.mtStrat = StrategyBuilder.buildStrategy(StrategyBuilder.MULTI_THREAD, this.nBodies, this.deltaTime);
+		this.sStrat = StrategyBuilder.buildStrategy(StrategyBuilder.STREAM, this.nBodies, this.deltaTime);
 
 		this.minMass = 100000.0;
 		this.maxMass = 1000000.0;
@@ -41,17 +39,17 @@ public class TaskStrategyTest {
 
 	@Test
 	public void testCorrectness() {
-		this.tStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
+		this.mtStrat.createBodies(this.minMass, this.maxMass, this.maxPosX, this.maxPosY, this.minSpeed, this.maxSpeed);
 		Assert.assertTrue("All bodies are created",
-				this.tStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
+				this.mtStrat.getBodies().stream().filter(b -> b != null).toArray().length == this.nBodies);
 
-		((MultiThreadStrategy) this.mtStrat).setBodies(this.tStrat.getBodies());
+		((StreamStrategy) this.sStrat).setBodies(this.mtStrat.getBodies());
 
-		this.tStrat.calculateAndMove();
 		this.mtStrat.calculateAndMove();
+		this.sStrat.calculateAndMove();
 
-		final List<Body> mtStratBodies = this.tStrat.getBodies();
-		final List<Body> sStratBodies = this.mtStrat.getBodies();
+		final List<Body> mtStratBodies = this.mtStrat.getBodies();
+		final List<Body> sStratBodies = this.sStrat.getBodies();
 		Body msStratBody;
 		Body sStratBody;
 		for (int i = 0; i < this.nBodies; i++) {
@@ -74,12 +72,12 @@ public class TaskStrategyTest {
 
 	@After
 	public void tearDown() {
+		this.sStrat.interrupt();
+		this.sStrat.clear();
+		this.sStrat = null;
+
 		this.mtStrat.interrupt();
 		this.mtStrat.clear();
 		this.mtStrat = null;
-
-		this.tStrat.interrupt();
-		this.tStrat.clear();
-		this.tStrat = null;
 	}
 }

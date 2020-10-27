@@ -14,6 +14,8 @@ import model.Body;
 /**
  * Strategy that uses Akka Actors to achieve the goal
  *
+ * @author Andrea Sperandio
+ *
  */
 public class ActorStrategy implements Strategy {
 
