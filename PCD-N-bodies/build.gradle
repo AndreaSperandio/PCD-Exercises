@@ -5,16 +5,30 @@
  * For more details take a look at the Java Libraries chapter in the Gradle
  * User Manual available at https://docs.gradle.org/6.3/userguide/java_library_plugin.html
  */
+ 
+import com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer
 
 plugins {
     // Apply the java-library plugin to add support for Java Library
     id 'java-library'
+	
+	id 'application'
+	
+	id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+}
+
+mainClassName = "view.SimulationView"
+
+shadowJar {
+    transform(AppendingTransformer) {
+        resource = 'reference.conf'
+    }
 }
 
 dependencies {
