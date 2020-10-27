@@ -1,5 +1,9 @@
 package model;
 
+/**
+ * Represents a Body in the System, characterised by a mass, a position and a speed
+ *
+ */
 public class Body {
 
 	private final double mass;  // kg

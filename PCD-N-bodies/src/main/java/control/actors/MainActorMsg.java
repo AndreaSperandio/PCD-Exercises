@@ -5,7 +5,15 @@ import java.util.concurrent.CompletableFuture;
 import model.Body;
 import model.TriangularMatrix;
 
+/**
+ * Messages that are recognised by the MainActor Class.
+ *
+ */
 public interface MainActorMsg {
+	/**
+	 * Message used to express the bounds needed to Create nBodies Bodies.
+	 *
+	 */
 	public static class CreateBodies {
 		private final CompletableFuture<Body[]> creationFuture;
 		private final double minMass;
@@ -56,6 +64,10 @@ public interface MainActorMsg {
 		}
 	}
 
+	/**
+	 * Message used to receive the Created Bodies.
+	 *
+	 */
 	public static class BodiesCreated {
 		private final CompletableFuture<Body[]> creationFuture;
 		private final Body[] bodies;
@@ -80,6 +92,10 @@ public interface MainActorMsg {
 		}
 	}
 
+	/**
+	 * Message used to Calculate the Forces and Move the Bodies.
+	 *
+	 */
 	public static class MoveBodies {
 		private final CompletableFuture<Body[]> moveFuture;
 
@@ -92,6 +108,10 @@ public interface MainActorMsg {
 		}
 	}
 
+	/**
+	 * Message used to receive the Calculated Forces.
+	 *
+	 */
 	public static class ForcesCalculated {
 		private final MoveBodies moveBodies;
 		private final TriangularMatrix matrixBF;
@@ -123,6 +143,10 @@ public interface MainActorMsg {
 		}
 	}
 
+	/**
+	 * Message used to receive the Moved Bodies.
+	 *
+	 */
 	public static class BodiesMoved {
 		private final CompletableFuture<Body[]> moveFuture;
 		private final Body[] bodies;
@@ -147,6 +171,10 @@ public interface MainActorMsg {
 		}
 	}
 
+	/**
+	 * Message used to receive the Bodies to set, used for backup purposes.
+	 *
+	 */
 	public static class SetBodies {
 		private final Body[] bodies;
 

@@ -15,6 +15,7 @@ import model.Vector;
 
 /**
  * Strategy that uses java (parallel) streams to achieve the goal
+ * This Strategy doesn't attempt to backup and recover the bodies position if the process is paused.
  *
  */
 public class StreamStrategy implements Strategy {

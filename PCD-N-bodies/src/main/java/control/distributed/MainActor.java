@@ -22,6 +22,12 @@ import control.distributed.MainActorMsg.SetBodies;
 import model.Body;
 import model.TriangularMatrix;
 
+/**
+ * MainActor that receives messages from DistributedStrategy and is responsible for the coordination required for
+ * creating bodies, calculating the forces and applying them to the bodies.
+ * The recognised messages are of the MainActorMsg type.
+ *
+ */
 public class MainActor extends AbstractBehavior<MainActorMsg> {
 	private static final int N_ACTORS = 10;
 	private final List<ActorSystem<ActorMsg>> actors;
@@ -69,6 +75,7 @@ public class MainActor extends AbstractBehavior<MainActorMsg> {
 				.build();
 	}
 
+	/* Receives a CreateBodies message and tells the actors to Create the Bodies */
 	private Behavior<MainActorMsg> onCreateBodies(final CreateBodies createBodies) {
 		this.nActorsBodyCreateCompleted = 0;
 
@@ -85,6 +92,7 @@ public class MainActor extends AbstractBehavior<MainActorMsg> {
 		return this;
 	}
 
+	/* Receives and stores the Created Bodies from the actors */
 	private Behavior<MainActorMsg> onBodiesCreated(final BodiesCreated bodiesCreated) {
 		final int from = bodiesCreated.getFrom();
 		final Body[] newBodies = bodiesCreated.getBodies();
@@ -101,6 +109,7 @@ public class MainActor extends AbstractBehavior<MainActorMsg> {
 		return this;
 	}
 
+	/* Receives a MoveBodies message and tells the actors to Calculate the Forces */
 	private Behavior<MainActorMsg> onMoveBodies(final MoveBodies moveBodies) {
 		this.nActorsForceCalculateCompleted = 0;
 
@@ -117,6 +126,7 @@ public class MainActor extends AbstractBehavior<MainActorMsg> {
 		return this;
 	}
 
+	/* Receives and stores the Calculated Forces from the actors */
 	private Behavior<MainActorMsg> onForcesCalculated(final ForcesCalculated forcesCalculated) {
 		final TriangularMatrix calculatedForces = forcesCalculated.getMatrixBF();
 		final int from = forcesCalculated.getFrom();
@@ -137,6 +147,7 @@ public class MainActor extends AbstractBehavior<MainActorMsg> {
 		return this;
 	}
 
+	/* Tells the actors to Move the Bodies */
 	private Behavior<MainActorMsg> moveBodies(final MoveBodies moveBodies) {
 		this.nActorsBodyMoveCompleted = 0;
 
@@ -153,6 +164,7 @@ public class MainActor extends AbstractBehavior<MainActorMsg> {
 		return this;
 	}
 
+	/* Receives and stores the Moved Bodies from the actors */
 	private Behavior<MainActorMsg> onBodiesMoved(final BodiesMoved bodiesMoved) {
 		final int from = bodiesMoved.getFrom();
 		final Body[] movedBodies = bodiesMoved.getBodies();
@@ -170,6 +182,7 @@ public class MainActor extends AbstractBehavior<MainActorMsg> {
 		return this;
 	}
 
+	/* Sets the Bodies */
 	private Behavior<MainActorMsg> onSetBodies(final SetBodies setBodies) {
 		this.bodies = setBodies.getBodies();
 

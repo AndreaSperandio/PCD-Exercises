@@ -4,7 +4,15 @@ import akka.actor.ActorRef;
 import model.Body;
 import model.TriangularMatrix;
 
+/**
+ * Messages that are recognised by the Actor Class.
+ *
+ */
 public interface ActorMsg {
+	/**
+	 * Message used to Create nBodies Bodies.
+	 *
+	 */
 	public static class CreateBodies {
 		private final ActorRef replyTo;
 		private final MainActorMsg.CreateBodies createBodies;
@@ -36,6 +44,10 @@ public interface ActorMsg {
 		}
 	}
 
+	/**
+	 * Message used to Calculate the Forces between nBodies Bodies.
+	 *
+	 */
 	public static class CalculateForces {
 		private final ActorRef replyTo;
 		private final MainActorMsg.MoveBodies moveBodies;
@@ -73,6 +85,10 @@ public interface ActorMsg {
 		}
 	}
 
+	/**
+	 * Message used to Move nBodies Bodies.
+	 *
+	 */
 	public static class MoveBodies {
 		private final ActorRef replyTo;
 		private final MainActorMsg.MoveBodies moveBodies;

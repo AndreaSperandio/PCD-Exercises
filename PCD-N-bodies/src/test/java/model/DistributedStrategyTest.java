@@ -2,6 +2,7 @@ package model;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,5 +71,16 @@ public class DistributedStrategyTest {
 			Assert.assertEquals("Body Speed y is moved correctly", msStratBody.getSpeed().getYComp(),
 					sStratBody.getSpeed().getYComp(), 0.00000000001);
 		}
+	}
+
+	@After
+	public void tearDown() {
+		this.mtStrat.interrupt();
+		this.mtStrat.clear();
+		this.mtStrat = null;
+
+		this.dStrat.interrupt();
+		this.dStrat.clear();
+		this.dStrat = null;
 	}
 }

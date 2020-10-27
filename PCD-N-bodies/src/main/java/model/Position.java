@@ -1,5 +1,9 @@
 package model;
 
+/**
+ * Represents a Body's two-dimensional Position in the System, characterised by a (x, y) couple
+ *
+ */
 public class Position {
 	public static final Position NULL_POSITION = new Position(0D, 0D);
 	public static final double NULL_DISTANCE = 0.0000000000001;

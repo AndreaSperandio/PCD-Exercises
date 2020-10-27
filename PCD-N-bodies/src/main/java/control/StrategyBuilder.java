@@ -5,6 +5,11 @@ import java.util.List;
 
 import view.component.NBComboBoxItem;
 
+/**
+ * Enumeration used in combination with the Builder Design Pattern
+ * It's used to create different Strategies and populate a ComboBox to choose amongst them
+ *
+ */
 public enum StrategyBuilder {
 	STREAM(0), MULTI_THREAD(1), TASK(2), ACTOR(3), DISTRIBUTED(4);
 

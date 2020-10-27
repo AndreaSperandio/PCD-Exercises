@@ -2,6 +2,10 @@ package model;
 
 import java.util.Arrays;
 
+/**
+ * Represents a Force between two bodies
+ *
+ */
 public class Force extends Vector {
 	public static final Force NULL = new Force(0D, 0D);
 
@@ -16,7 +20,7 @@ public class Force extends Vector {
 	}
 
 	/**
-	 * Modifies this Vector, reverting its orientation
+	 * Modifies this Force, reverting its orientation
 	 */
 	@Override
 	public Force revertOrientation() {
@@ -25,7 +29,7 @@ public class Force extends Vector {
 	}
 
 	/**
-	 * Creates a new Vector, reverting a vector orientation
+	 * Creates a new Force, reverting a Force orientation
 	 */
 	public static Force revertOrientation(final Force force) {
 		return new Force(Vector.revertOrientation(force));

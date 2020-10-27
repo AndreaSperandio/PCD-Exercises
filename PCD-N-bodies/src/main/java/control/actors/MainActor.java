@@ -15,6 +15,12 @@ import control.actors.MainActorMsg.SetBodies;
 import model.Body;
 import model.TriangularMatrix;
 
+/**
+ * MainActor that receives messages from ActorStrategy and is responsible for the coordination required for
+ * creating bodies, calculating the forces and applying them to the bodies.
+ * The recognised messages are those listed in the MainActorMsg Interface.
+ *
+ */
 public class MainActor extends AbstractActor {
 	private static final int N_ACTORS = 10;
 	private final List<ActorRef> actors;
@@ -42,6 +48,7 @@ public class MainActor extends AbstractActor {
 		}
 	}
 
+	/* Receives a CreateBodies message and tells the actors to Create the Bodies */
 	private void onCreateBodies(final CreateBodies createBodies) {
 		this.nActorsBodyCreateCompleted = 0;
 
@@ -57,6 +64,7 @@ public class MainActor extends AbstractActor {
 				this.getSelf());
 	}
 
+	/* Receives and stores the Created Bodies from the actors */
 	private void onBodiesCreated(final BodiesCreated bodiesCreated) {
 		final int from = bodiesCreated.getFrom();
 		final Body[] newBodies = bodiesCreated.getBodies();
@@ -71,6 +79,7 @@ public class MainActor extends AbstractActor {
 		}
 	}
 
+	/* Receives a MoveBodies message and tells the actors to Calculate the Forces */
 	private void onMoveBodies(final MoveBodies moveBodies) {
 		this.nActorsForceCalculateCompleted = 0;
 
@@ -96,6 +105,7 @@ public class MainActor extends AbstractActor {
 				this.bodies, firstBody, this.nBodies - firstBody), this.getSelf());
 	}
 
+	/* Receives and stores the Calculated Forces from the actors */
 	private void onForcesCalculated(final ForcesCalculated forcesCalculated) {
 		final TriangularMatrix calculatedForces = forcesCalculated.getMatrixBF();
 		final int from = forcesCalculated.getFrom();
@@ -114,6 +124,7 @@ public class MainActor extends AbstractActor {
 		}
 	}
 
+	/* Tells the actors to Move the Bodies */
 	private void moveBodies(final MoveBodies moveBodies) {
 		this.nActorsBodyMoveCompleted = 0;
 
@@ -135,6 +146,7 @@ public class MainActor extends AbstractActor {
 				firstBody, this.nBodies - firstBody, this.deltaTime), this.getSelf());
 	}
 
+	/* Receives and stores the Moved Bodies from the actors */
 	private void onBodiesMoved(final BodiesMoved bodiesMoved) {
 		final int from = bodiesMoved.getFrom();
 		final Body[] movedBodies = bodiesMoved.getBodies();
@@ -150,6 +162,7 @@ public class MainActor extends AbstractActor {
 		}
 	}
 
+	/* Sets the Bodies */
 	private void onSetBodies(final SetBodies setBodies) {
 		this.bodies = setBodies.getBodies();
 	}

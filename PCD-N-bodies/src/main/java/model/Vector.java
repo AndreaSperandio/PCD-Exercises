@@ -1,5 +1,9 @@
 package model;
 
+/**
+ * Represents a two-dimensional Vector in the System, characterised by an x-component and an y-component
+ *
+ */
 public class Vector {
 	private double xComp;  // x component
 	private double yComp;  // y component

@@ -18,6 +18,12 @@ import model.Position;
 import model.TriangularMatrix;
 import model.Vector;
 
+/**
+ * Actor that receives messages from the MainActor and is responsible for creating bodies, calculating the forces
+ * and applying them to the bodies.
+ * The recognised messages are of the ActorMsg type.
+ *
+ */
 public class Actor extends AbstractBehavior<ActorMsg> {
 	private Body[] bodies;
 
@@ -36,6 +42,7 @@ public class Actor extends AbstractBehavior<ActorMsg> {
 				.onMessage(MoveBodies.class, this::onMoveBodies).build();
 	}
 
+	/* Receives a CreateBodies message and replies with the Body[] of created bodies */
 	private Behavior<ActorMsg> onCreateBodies(final CreateBodies createBodies) {
 		final MainActorMsg.CreateBodies values = createBodies.getCreateBodies();
 		final Random random = new Random();
@@ -58,12 +65,13 @@ public class Actor extends AbstractBehavior<ActorMsg> {
 		return this;
 	}
 
+	/* Receives a CalculateForces message and replies with the TriangularMatrix of forces created */
 	private Behavior<ActorMsg> onCalculateForces(final CalculateForces calculateForces) {
 		this.bodies = calculateForces.getBodies();
 		final int from = calculateForces.getFrom();
 		final int nBodies = calculateForces.getnBodies();
 
-		final TriangularMatrix matrixBF = new TriangularMatrix(this.bodies.length - from);
+		final TriangularMatrix matrixBF = new TriangularMatrix(nBodies, this.bodies.length - from);
 
 		for (int i = from; i < from + nBodies; i++) {
 			for (int j = i + 1; j < this.bodies.length; j++) {
@@ -77,6 +85,7 @@ public class Actor extends AbstractBehavior<ActorMsg> {
 		return this;
 	}
 
+	/* Receives a MoveBodies message and replies with the Body[] of moved bodies */
 	private Behavior<ActorMsg> onMoveBodies(final MoveBodies moveBodies) {
 		final TriangularMatrix matrixBF = moveBodies.getMatrixBF();
 		final int from = moveBodies.getFrom();

@@ -14,6 +14,12 @@ import model.Position;
 import model.TriangularMatrix;
 import model.Vector;
 
+/**
+ * Actor that receives messages from the MainActor and is responsible for creating bodies, calculating the forces
+ * and applying them to the bodies.
+ * The recognised messages are those listed in the ActorMsg Interface.
+ *
+ */
 public class Actor extends AbstractActor {
 	private Body[] bodies;
 
@@ -21,6 +27,7 @@ public class Actor extends AbstractActor {
 		super();
 	}
 
+	/* Receives a CreateBodies message and replies with the Body[] of created bodies */
 	private void onCreateBodies(final CreateBodies createBodies) {
 		final MainActorMsg.CreateBodies values = createBodies.getCreateBodies();
 		final Random random = new Random();
@@ -41,6 +48,7 @@ public class Actor extends AbstractActor {
 				this.getSelf());
 	}
 
+	/* Receives a CalculateForces message and replies with the TriangularMatrix of forces created */
 	private void onCalculateForces(final CalculateForces calculateForces) {
 		this.bodies = calculateForces.getBodies();
 		final int from = calculateForces.getFrom();
@@ -53,7 +61,7 @@ public class Actor extends AbstractActor {
 				matrixBF.set(i, j, Force.get(this.bodies[i], this.bodies[j]));
 			}
 		}*/
-		final TriangularMatrix matrixBF = new TriangularMatrix(this.bodies.length - from);
+		final TriangularMatrix matrixBF = new TriangularMatrix(nBodies, this.bodies.length - from);
 
 		for (int i = from; i < from + nBodies; i++) {
 			for (int j = i + 1; j < this.bodies.length; j++) {
@@ -66,6 +74,7 @@ public class Actor extends AbstractActor {
 				this.getSelf());
 	}
 
+	/* Receives a MoveBodies message and replies with the Body[] of moved bodies */
 	private void onMoveBodies(final MoveBodies moveBodies) {
 		final TriangularMatrix matrixBF = moveBodies.getMatrixBF();
 		final int from = moveBodies.getFrom();
@@ -114,6 +123,7 @@ public class Actor extends AbstractActor {
 	}
 
 	@Override
+	/** The recognised messages are those listed in the ActorMsg Interface. */
 	public Receive createReceive() {
 		return this.receiveBuilder().match(CreateBodies.class, this::onCreateBodies)
 				.match(CalculateForces.class, this::onCalculateForces).match(MoveBodies.class, this::onMoveBodies)

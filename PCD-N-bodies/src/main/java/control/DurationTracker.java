@@ -1,5 +1,9 @@
 package control;
 
+/**
+ * Utility class used to track a routine's required time
+ *
+ */
 public class DurationTracker {
 	private static final int NANOS_TO_MILLIS = 1000000;
 

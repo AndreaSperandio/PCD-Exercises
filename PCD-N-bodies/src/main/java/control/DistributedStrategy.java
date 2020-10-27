@@ -67,6 +67,9 @@ public class DistributedStrategy implements Strategy {
 		this.interrupted = false;
 	}
 
+	/**
+	 * A Main Actor is used to coordinate the Body Creation job, dividing the work between other distributed Actors.
+	 */
 	@Override
 	public void createBodies(final double minMass, final double maxMass, final double maxPosX, final double maxPosY,
 			final double minSpeed, final double maxSpeed) {
@@ -77,6 +80,10 @@ public class DistributedStrategy implements Strategy {
 		this.bodies = future.join();
 	}
 
+	/**
+	 * A Main Actor is used to coordinate the Forces Calculation and Bodies Moving jobs, dividing the work between
+	 * other distributed Actors.
+	 */
 	@Override
 	public void calculateAndMove() {
 

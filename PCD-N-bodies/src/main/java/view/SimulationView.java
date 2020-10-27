@@ -43,7 +43,7 @@ public class SimulationView extends JFrame {
 	private static final boolean DEBUG = true;
 
 	private static final int MIN_BODY_SIZE = 1;
-	private static final int N_BODIES = 5000;  //TODO choose
+	private static final int N_BODIES = 5000;
 	private static final int DELTA_TIME = 10000;  // seconds
 	private static final int REFRESH_RATE = 1000;  // millis
 	private static final boolean CLEAR_TRACES = true;
@@ -309,9 +309,6 @@ public class SimulationView extends JFrame {
 		this.txtDeltaTime.setValue(SimulationView.DELTA_TIME);
 		this.txtRefreshRate.setValue(SimulationView.REFRESH_RATE);
 		this.cmbStrategy.addItems(StrategyBuilder.getComboItems());
-
-		//TODO remove
-		this.cmbStrategy.setSelectedIndex(StrategyBuilder.DISTRIBUTED.getValue());
 
 		this.pack();
 		this.setVisible(true);
