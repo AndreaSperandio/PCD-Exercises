@@ -3,6 +3,9 @@ package model;
 /**
  * Stores a Triangular Matrix of Forces without the main diagonal
  * Can't use Java Generics because they slow down the matrix too much.
+ *
+ * @author Andrea Sperandio
+ *
  */
 public class TriangularMatrix {
 	private final int rowSize;

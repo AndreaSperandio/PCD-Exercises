@@ -3,6 +3,8 @@ package model;
 /**
  * Represents a Body in the System, characterised by a mass, a position and a speed
  *
+ * @author Andrea Sperandio
+ *
  */
 public class Body {
 

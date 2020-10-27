@@ -5,6 +5,8 @@ import java.util.Arrays;
 /**
  * Represents a Force between two bodies
  *
+ * @author Andrea Sperandio
+ *
  */
 public class Force extends Vector {
 	public static final Force NULL = new Force(0D, 0D);

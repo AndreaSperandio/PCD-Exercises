@@ -3,6 +3,8 @@ package model;
 /**
  * Represents a Body's two-dimensional Position in the System, characterised by a (x, y) couple
  *
+ * @author Andrea Sperandio
+ *
  */
 public class Position {
 	public static final Position NULL_POSITION = new Position(0D, 0D);
