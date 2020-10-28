@@ -4,24 +4,62 @@ import io.reactivex.rxjava3.core.Observable;
 import model.TempSensor;
 
 public class TempStream {
-	private TempStream() {
-		// Do nothing
+	private final long freq;
+	private final double min;
+	private final double max;
+	private final double spikeFreq;
+
+	private volatile boolean stopped;
+	private volatile boolean paused;
+	private Thread thread;
+
+	public TempStream(final long freq, final Double min, final Double max, final Double spikeFreq) {
+		this.freq = freq;
+		this.min = min;
+		this.max = max;
+		this.spikeFreq = spikeFreq;
+
+		this.stopped = false;
+		this.paused = false;
 	}
 
-	public static Observable<Double> buildTempStream(final long freq, final double min, final double max,
-			final double spikeFreq) {
+	public Observable<Double> build() {
 		return Observable.create(emitter -> {
-			new Thread(() -> {
-				final TempSensor tempSensor = new TempSensor(min, max, spikeFreq);
-				while (true) {
-					try {
-						emitter.onNext(Double.valueOf(tempSensor.getCurrentValue()));
-						Thread.sleep(freq);
-					} catch (@SuppressWarnings("unused") final Exception ex) {
-						// Do nothing
+			this.thread = new Thread() {
+				@Override
+				public void run() {
+					final TempSensor tempSensor = new TempSensor(TempStream.this.min, TempStream.this.max,
+							TempStream.this.spikeFreq);
+					while (!TempStream.this.stopped) {
+						try {
+							if (TempStream.this.paused) {
+								synchronized (this) {
+									this.wait();
+								}
+								continue;
+							}
+
+							emitter.onNext(Double.valueOf(tempSensor.getCurrentValue()));
+							Thread.sleep(TempStream.this.freq);
+						} catch (@SuppressWarnings("unused") final Exception ex) {
+							// Do nothing
+						}
 					}
 				}
-			}).start();
+			};
+			this.thread.start();
 		});
+	}
+
+	public synchronized void stopEmitting() {
+		this.stopped = true;
+		this.thread.interrupt();
+	}
+
+	public synchronized void pauseEmitting(final boolean _paused) {
+		this.paused = _paused;
+		synchronized (this.thread) {
+			this.thread.notify();
+		}
 	}
 }
