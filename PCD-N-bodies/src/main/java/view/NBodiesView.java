@@ -36,10 +36,10 @@ import view.util.NBLocalizator;
 import view.util.NBMessage;
 import view.util.NBResource;
 
-public class SimulationView extends JFrame {
+public class NBodiesView extends JFrame {
 	private static final long serialVersionUID = 846132440578478084L;
 
-	private static final NBLocalizator LOC = new NBLocalizator(SimulationView.class);
+	private static final NBLocalizator LOC = new NBLocalizator(NBodiesView.class);
 	private static final boolean DEBUG = true;
 
 	private static final int MIN_BODY_SIZE = 1;
@@ -57,35 +57,34 @@ public class SimulationView extends JFrame {
 
 	private JPanel pnlBodies;
 	private final JPanel pnlControl = new JPanel();
-	private final NBButton btnStart = new NBButton(SimulationView.LOC.getRes("btnStart"), NBResource.getStartImage());
-	private final NBButton btnStop = new NBButton(SimulationView.LOC.getRes("btnStop"), NBResource.getStopImage());
-	private final NBButton btnClear = new NBButton(SimulationView.LOC.getRes("btnClear"), NBResource.getClearImage());
-	private final NBCheckBox chkClearTraces = new NBCheckBox(SimulationView.LOC.getRes("chkClearTraces"));
-	private final JLabel lblParams = new JLabel(SimulationView.LOC.getRes("lblParams"));
-	private final JLabel lblStrategy = new JLabel(SimulationView.LOC.getRes("lblStrategy"));
+	private final NBButton btnStart = new NBButton(NBodiesView.LOC.getRes("btnStart"), NBResource.getStartImage());
+	private final NBButton btnStop = new NBButton(NBodiesView.LOC.getRes("btnStop"), NBResource.getStopImage());
+	private final NBButton btnClear = new NBButton(NBodiesView.LOC.getRes("btnClear"), NBResource.getClearImage());
+	private final NBCheckBox chkClearTraces = new NBCheckBox(NBodiesView.LOC.getRes("chkClearTraces"));
+	private final JLabel lblParams = new JLabel(NBodiesView.LOC.getRes("lblParams"));
+	private final JLabel lblStrategy = new JLabel(NBodiesView.LOC.getRes("lblStrategy"));
 	private final NBComboBox<NBComboBoxItem<StrategyBuilder>, StrategyBuilder> cmbStrategy = new NBComboBox<>();
-	private final JLabel lblNBodies = new JLabel(SimulationView.LOC.getRes("lblNBodies"));
+	private final JLabel lblNBodies = new JLabel(NBodiesView.LOC.getRes("lblNBodies"));
 	private final NBIntTextField txtNBodies = new NBIntTextField();
-	private final JLabel lblDeltaTime = new JLabel(SimulationView.LOC.getRes("lblDeltaTime"));
+	private final JLabel lblDeltaTime = new JLabel(NBodiesView.LOC.getRes("lblDeltaTime"));
 	private final NBIntTextField txtDeltaTime = new NBIntTextField();
-	private final JLabel lblRefreshRate = new JLabel(SimulationView.LOC.getRes("lblRefreshRate"));
+	private final JLabel lblRefreshRate = new JLabel(NBodiesView.LOC.getRes("lblRefreshRate"));
 	private final NBIntTextField txtRefreshRate = new NBIntTextField();
-	private final JLabel lblKey = new JLabel(SimulationView.LOC.getRes("lblKey"));
+	private final JLabel lblKey = new JLabel(NBodiesView.LOC.getRes("lblKey"));
 	private final JLabel lblKeySize = new JLabel(
-			SimulationView.LOC.getRes("lblKeySize", SimulationView.BODY_MIN_MASS, SimulationView.BODY_MAX_MASS));
+			NBodiesView.LOC.getRes("lblKeySize", NBodiesView.BODY_MIN_MASS, NBodiesView.BODY_MAX_MASS));
 	private final JLabel lblKeyColor = new JLabel(
-			SimulationView.LOC.getRes("lblKeyColor", SimulationView.BODY_MIN_SPEED, SimulationView.BODY_MAX_SPEED));
-	private final JLabel lblDuration = new JLabel(SimulationView.LOC.getRes("lblDuration"));
-	private final JLabel lblDurationCreateBodies = new JLabel(SimulationView.LOC.getRes("lblDurationCreateBodies"));
-	private final JLabel lblDurationCalcAndMove = new JLabel(SimulationView.LOC.getRes("lblDurationCalcAndMove"));
-	private final JLabel lblDurationCalcMinMaxSpeed = new JLabel(
-			SimulationView.LOC.getRes("lblDurationCalcMinMaxSpeed"));
-	private final JLabel lblDurationCalcPaintings = new JLabel(SimulationView.LOC.getRes("lblDurationCalcPaintings"));
-	private final JLabel lblDurationPaintBodies = new JLabel(SimulationView.LOC.getRes("lblDurationPaintBodies"));
-	private final JLabel lblDurationTotal = new JLabel(SimulationView.LOC.getRes("lblDurationTotal"));
-	private final JLabel lblDurationTotalErr = new JLabel(SimulationView.LOC.getRes("lblDurationTotalErr"));
-	private final JLabel lblDurationMean = new JLabel(SimulationView.LOC.getRes("lblDurationMean"));
-	private final JLabel lblDurationMeanErr = new JLabel(SimulationView.LOC.getRes("lblDurationMeanErr"));
+			NBodiesView.LOC.getRes("lblKeyColor", NBodiesView.BODY_MIN_SPEED, NBodiesView.BODY_MAX_SPEED));
+	private final JLabel lblDuration = new JLabel(NBodiesView.LOC.getRes("lblDuration"));
+	private final JLabel lblDurationCreateBodies = new JLabel(NBodiesView.LOC.getRes("lblDurationCreateBodies"));
+	private final JLabel lblDurationCalcAndMove = new JLabel(NBodiesView.LOC.getRes("lblDurationCalcAndMove"));
+	private final JLabel lblDurationCalcMinMaxSpeed = new JLabel(NBodiesView.LOC.getRes("lblDurationCalcMinMaxSpeed"));
+	private final JLabel lblDurationCalcPaintings = new JLabel(NBodiesView.LOC.getRes("lblDurationCalcPaintings"));
+	private final JLabel lblDurationPaintBodies = new JLabel(NBodiesView.LOC.getRes("lblDurationPaintBodies"));
+	private final JLabel lblDurationTotal = new JLabel(NBodiesView.LOC.getRes("lblDurationTotal"));
+	private final JLabel lblDurationTotalErr = new JLabel(NBodiesView.LOC.getRes("lblDurationTotalErr"));
+	private final JLabel lblDurationMean = new JLabel(NBodiesView.LOC.getRes("lblDurationMean"));
+	private final JLabel lblDurationMeanErr = new JLabel(NBodiesView.LOC.getRes("lblDurationMeanErr"));
 
 	private final List<NBColor> colors = new ArrayList<>();
 	private BufferedImage pnlBodiesImg = null;
@@ -105,13 +104,13 @@ public class SimulationView extends JFrame {
 	private volatile Double durationMean = null;
 	private volatile int cycles;
 
-	public SimulationView() {
+	public NBodiesView() {
 		this.setup();
 		this.init();
 	}
 
 	private void setup() {
-		this.setTitle(SimulationView.LOC.getRes("title"));
+		this.setTitle(NBodiesView.LOC.getRes("title"));
 		final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setSize(screenSize);
 		this.setPreferredSize(screenSize);
@@ -121,9 +120,9 @@ public class SimulationView extends JFrame {
 			@SuppressWarnings("unused")
 			@Override
 			public void windowClosing(final WindowEvent e) {
-				if (SimulationView.DEBUG
-						|| NBMessage.showConfirmWarnDialog(SimulationView.this, SimulationView.LOC.getRes("cnfExit"))) {
-					SimulationView.this.dispose();
+				if (NBodiesView.DEBUG
+						|| NBMessage.showConfirmWarnDialog(NBodiesView.this, NBodiesView.LOC.getRes("cnfExit"))) {
+					NBodiesView.this.dispose();
 					System.exit(0);
 				}
 			}
@@ -135,30 +134,29 @@ public class SimulationView extends JFrame {
 
 			@Override
 			public void paintComponent(final Graphics g) {
-				if (SimulationView.this.chkClearTraces.isSelected() || SimulationView.this.forcePnlBodiesClear) {
+				if (NBodiesView.this.chkClearTraces.isSelected() || NBodiesView.this.forcePnlBodiesClear) {
 					((Graphics2D) g).clearRect(0, 0, this.getWidth(), this.getHeight());
-					SimulationView.this.pnlBodiesImg = null;
-					SimulationView.this.forcePnlBodiesClear = false;
+					NBodiesView.this.pnlBodiesImg = null;
+					NBodiesView.this.forcePnlBodiesClear = false;
 				}
 
-				if (SimulationView.this.pnlBodiesImg == null) {
-					SimulationView.this.pnlBodiesImg = new BufferedImage(this.getWidth(), this.getHeight(),
+				if (NBodiesView.this.pnlBodiesImg == null) {
+					NBodiesView.this.pnlBodiesImg = new BufferedImage(this.getWidth(), this.getHeight(),
 							BufferedImage.TYPE_INT_ARGB);
 				}
-				final Graphics2D g2d = (Graphics2D) SimulationView.this.pnlBodiesImg.getGraphics();
+				final Graphics2D g2d = (Graphics2D) NBodiesView.this.pnlBodiesImg.getGraphics();
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-				final List<Body> bodies = SimulationView.this.strategy != null
-						? SimulationView.this.strategy.getBodies()
+				final List<Body> bodies = NBodiesView.this.strategy != null ? NBodiesView.this.strategy.getBodies()
 						: null;
 				if (bodies == null || bodies.isEmpty()) {
 					return;
 				}
 
 				DurationTracker dt = new DurationTracker("Calculate paintings").start();
-				if (SimulationView.this.colors.isEmpty()) {
+				if (NBodiesView.this.colors.isEmpty()) {
 					for (int i = 0; i < bodies.size(); i++) {
-						SimulationView.this.colors.add(new NBColor());
+						NBodiesView.this.colors.add(new NBColor());
 					}
 				}
 
@@ -171,28 +169,26 @@ public class SimulationView extends JFrame {
 				for (int i = 0; i < bodies.size(); i++) {
 					body = bodies.get(i);
 					position = body.getPosition();
-					size = (int) (SimulationView.MIN_BODY_SIZE * body.getMass() / SimulationView.BODY_MIN_MASS);
-					g2d.setColor(SimulationView.this.colors.get(i)
+					size = (int) (NBodiesView.MIN_BODY_SIZE * body.getMass() / NBodiesView.BODY_MIN_MASS);
+					g2d.setColor(NBodiesView.this.colors.get(i)
 							.getNew((float) (body.getSpeed().getModule() / maxModuleSpeed)));
 					g2d.fillOval((int) Math.round(position.getX()), (int) Math.round(position.getY()), size, size);
 				}
-				SimulationView.this.durationCalcPaintings = DurationTracker
-						.toMillsDuration(dt.stop(SimulationView.DEBUG));
+				NBodiesView.this.durationCalcPaintings = DurationTracker.toMillsDuration(dt.stop(NBodiesView.DEBUG));
 
 				dt = new DurationTracker("Paint bodies").start();
 				g2d.dispose();
 				super.paintComponent(g);
 				((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				((Graphics2D) g).drawImage(SimulationView.this.pnlBodiesImg, null, 0, 0);
-				SimulationView.this.durationPaintBodies = DurationTracker
-						.toMillsDuration(dt.stop(SimulationView.DEBUG));
-				if (SimulationView.DEBUG) {
+				((Graphics2D) g).drawImage(NBodiesView.this.pnlBodiesImg, null, 0, 0);
+				NBodiesView.this.durationPaintBodies = DurationTracker.toMillsDuration(dt.stop(NBodiesView.DEBUG));
+				if (NBodiesView.DEBUG) {
 					System.out.println();
 				}
 			}
 		};
 		this.add(this.pnlBodies, BorderLayout.CENTER);
-		final Dimension pnlBodiesDim = new Dimension((int) screenSize.getWidth() - SimulationView.PNL_CONTROL_WIDTH,
+		final Dimension pnlBodiesDim = new Dimension((int) screenSize.getWidth() - NBodiesView.PNL_CONTROL_WIDTH,
 				(int) screenSize.getHeight());
 		this.pnlBodies.setSize(pnlBodiesDim);
 		this.pnlBodies.setPreferredSize(pnlBodiesDim);
@@ -200,7 +196,7 @@ public class SimulationView extends JFrame {
 		this.pnlBodies.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, NBColor.PNL_BORDER));
 
 		this.add(this.pnlControl, BorderLayout.EAST);
-		final Dimension pnlControlDim = new Dimension(SimulationView.PNL_CONTROL_WIDTH, (int) screenSize.getHeight());
+		final Dimension pnlControlDim = new Dimension(NBodiesView.PNL_CONTROL_WIDTH, (int) screenSize.getHeight());
 		this.pnlControl.setSize(pnlControlDim);
 		this.pnlControl.setPreferredSize(pnlControlDim);
 		this.pnlControl.setBorder(BorderFactory.createMatteBorder(1, 1, 0, 0, NBColor.PNL_BORDER));
@@ -283,12 +279,12 @@ public class SimulationView extends JFrame {
 		this.lblDurationMean.setBounds(10, y, 85, heightComp);
 		this.lblDurationMeanErr.setBounds(95, y, 90, heightComp);
 
-		this.chkClearTraces.setToolTipText(SimulationView.LOC.getRes("chkClearTracesToolTip"));
-		this.lblParams.setToolTipText(SimulationView.LOC.getRes("lblParamsToolTip"));
-		this.lblStrategy.setToolTipText(SimulationView.LOC.getRes("lblStrategyToolTip"));
-		this.lblNBodies.setToolTipText(SimulationView.LOC.getRes("lblNBodiesToolTip"));
-		this.lblDeltaTime.setToolTipText(SimulationView.LOC.getRes("lblDeltaTimeToolTip"));
-		this.lblRefreshRate.setToolTipText(SimulationView.LOC.getRes("lblRefreshRateToolTip"));
+		this.chkClearTraces.setToolTipText(NBodiesView.LOC.getRes("chkClearTracesToolTip"));
+		this.lblParams.setToolTipText(NBodiesView.LOC.getRes("lblParamsToolTip"));
+		this.lblStrategy.setToolTipText(NBodiesView.LOC.getRes("lblStrategyToolTip"));
+		this.lblNBodies.setToolTipText(NBodiesView.LOC.getRes("lblNBodiesToolTip"));
+		this.lblDeltaTime.setToolTipText(NBodiesView.LOC.getRes("lblDeltaTimeToolTip"));
+		this.lblRefreshRate.setToolTipText(NBodiesView.LOC.getRes("lblRefreshRateToolTip"));
 
 		this.lblParams.setForeground(NBColor.LBL_BLUE);
 		this.lblKey.setForeground(NBColor.LBL_BLUE);
@@ -304,10 +300,10 @@ public class SimulationView extends JFrame {
 
 	private void init() {
 		this.updateGraphics(false, true);
-		this.chkClearTraces.setSelected(SimulationView.CLEAR_TRACES);
-		this.txtNBodies.setValue(SimulationView.N_BODIES);
-		this.txtDeltaTime.setValue(SimulationView.DELTA_TIME);
-		this.txtRefreshRate.setValue(SimulationView.REFRESH_RATE);
+		this.chkClearTraces.setSelected(NBodiesView.CLEAR_TRACES);
+		this.txtNBodies.setValue(NBodiesView.N_BODIES);
+		this.txtDeltaTime.setValue(NBodiesView.DELTA_TIME);
+		this.txtRefreshRate.setValue(NBodiesView.REFRESH_RATE);
 		this.cmbStrategy.addItems(StrategyBuilder.getComboItems());
 
 		this.pack();
@@ -323,11 +319,11 @@ public class SimulationView extends JFrame {
 			final DurationTracker dt = new DurationTracker("Create bodies").start();
 			this.strategy = StrategyBuilder.buildStrategy(this.cmbStrategy.getSelectedItemKey(),
 					this.txtNBodies.getInt(), this.txtDeltaTime.getInt());
-			this.strategy.createBodies(SimulationView.BODY_MIN_MASS, SimulationView.BODY_MAX_MASS,
+			this.strategy.createBodies(NBodiesView.BODY_MIN_MASS, NBodiesView.BODY_MAX_MASS,
 					this.pnlBodies.getSize().getWidth(), this.pnlBodies.getSize().getHeight(),
-					SimulationView.BODY_MIN_SPEED, SimulationView.BODY_MAX_SPEED);
-			this.durationCreateBodies = DurationTracker.toMillsDuration(dt.stop(SimulationView.DEBUG));
-			if (SimulationView.DEBUG) {
+					NBodiesView.BODY_MIN_SPEED, NBodiesView.BODY_MAX_SPEED);
+			this.durationCreateBodies = DurationTracker.toMillsDuration(dt.stop(NBodiesView.DEBUG));
+			if (NBodiesView.DEBUG) {
 				System.out.println();
 			}
 
@@ -365,7 +361,7 @@ public class SimulationView extends JFrame {
 		this.btnStop.setEnabled(started);
 		this.btnClear.setEnabled(!started && !cleared);
 		if (!started) {
-			this.btnStart.setText(SimulationView.LOC.getRes(cleared ? "btnStart" : "btnResume"));
+			this.btnStart.setText(NBodiesView.LOC.getRes(cleared ? "btnStart" : "btnResume"));
 		}
 
 		this.cmbStrategy.setEnabled(!started && cleared);
@@ -379,8 +375,8 @@ public class SimulationView extends JFrame {
 		this.durationTotal = 0L;
 
 		if (cleared) {
-			this.lblKeyColor.setText(SimulationView.LOC.getRes("lblKeyColor", SimulationView.BODY_MIN_SPEED,
-					SimulationView.BODY_MAX_SPEED));
+			this.lblKeyColor.setText(
+					NBodiesView.LOC.getRes("lblKeyColor", NBodiesView.BODY_MIN_SPEED, NBodiesView.BODY_MAX_SPEED));
 			this.durationCreateBodies = null;
 			this.durationCalcAndMove = null;
 			this.durationCalcMinMaxSpeed = null;
@@ -400,18 +396,16 @@ public class SimulationView extends JFrame {
 		}
 
 		this.lblDurationCreateBodies
-				.setText(SimulationView.LOC.getRes("lblDurationCreateBodies", this.durationCreateBodies));
-		this.lblDurationCalcAndMove
-				.setText(SimulationView.LOC.getRes("lblDurationCalcAndMove", this.durationCalcAndMove));
+				.setText(NBodiesView.LOC.getRes("lblDurationCreateBodies", this.durationCreateBodies));
+		this.lblDurationCalcAndMove.setText(NBodiesView.LOC.getRes("lblDurationCalcAndMove", this.durationCalcAndMove));
 		this.lblDurationCalcMinMaxSpeed
-				.setText(SimulationView.LOC.getRes("lblDurationCalcMinMaxSpeed", this.durationCalcMinMaxSpeed));
+				.setText(NBodiesView.LOC.getRes("lblDurationCalcMinMaxSpeed", this.durationCalcMinMaxSpeed));
 		this.lblDurationCalcPaintings
-				.setText(SimulationView.LOC.getRes("lblDurationCalcPaintings", this.durationCalcPaintings));
-		this.lblDurationPaintBodies
-				.setText(SimulationView.LOC.getRes("lblDurationPaintBodies", this.durationPaintBodies));
-		this.lblDurationTotal.setText(SimulationView.LOC.getRes("lblDurationTotal",
+				.setText(NBodiesView.LOC.getRes("lblDurationCalcPaintings", this.durationCalcPaintings));
+		this.lblDurationPaintBodies.setText(NBodiesView.LOC.getRes("lblDurationPaintBodies", this.durationPaintBodies));
+		this.lblDurationTotal.setText(NBodiesView.LOC.getRes("lblDurationTotal",
 				this.durationTotal == 0L ? (Long) null : this.durationTotal));
-		this.lblDurationMean.setText(SimulationView.LOC.getRes("lblDurationMean",
+		this.lblDurationMean.setText(NBodiesView.LOC.getRes("lblDurationMean",
 				this.durationMean == 0D ? (Long) null : (Long) this.durationMean.longValue()));
 
 		this.lblDurationTotal.setForeground(this.durationTotal > this.refreshRate ? NBColor.LBL_RED : NBColor.LBL_GREY);
@@ -422,20 +416,19 @@ public class SimulationView extends JFrame {
 
 	private boolean checkParams() {
 		if (this.txtNBodies.getInt() <= 0) {
-			NBMessage.showErrDialog(this,
-					this.lblNBodies.getText() + " " + SimulationView.LOC.getRes("errNegativeValue"));
+			NBMessage.showErrDialog(this, this.lblNBodies.getText() + " " + NBodiesView.LOC.getRes("errNegativeValue"));
 			return false;
 		}
 
 		if (this.txtDeltaTime.getInt() <= 0) {
 			NBMessage.showErrDialog(this,
-					this.lblDeltaTime.getText() + " " + SimulationView.LOC.getRes("errNegativeValue"));
+					this.lblDeltaTime.getText() + " " + NBodiesView.LOC.getRes("errNegativeValue"));
 			return false;
 		}
 
 		if (this.txtRefreshRate.getInt() <= 0) {
 			NBMessage.showErrDialog(this,
-					this.lblRefreshRate.getText() + " " + SimulationView.LOC.getRes("errNegativeValue"));
+					this.lblRefreshRate.getText() + " " + NBodiesView.LOC.getRes("errNegativeValue"));
 			return false;
 		}
 		return true;
@@ -450,39 +443,38 @@ public class SimulationView extends JFrame {
 	private class SVThread extends Thread {
 		@Override
 		public void run() {
-			while (!SimulationView.this.tStopped) {
+			while (!NBodiesView.this.tStopped) {
 				try {
 					DurationTracker dt = new DurationTracker("Calculate & Move").start();
-					if (SimulationView.this.strategy == null || SimulationView.this.tStopped) {
+					if (NBodiesView.this.strategy == null || NBodiesView.this.tStopped) {
 						return;
 					}
-					SimulationView.this.strategy.calculateAndMove();
-					SimulationView.this.durationCalcAndMove = DurationTracker
-							.toMillsDuration(dt.stop(SimulationView.DEBUG));
+					NBodiesView.this.strategy.calculateAndMove();
+					NBodiesView.this.durationCalcAndMove = DurationTracker.toMillsDuration(dt.stop(NBodiesView.DEBUG));
 
 					dt = new DurationTracker("Calculate bodies min/max speeds").start();
-					if (SimulationView.this.strategy == null || SimulationView.this.tStopped) {
+					if (NBodiesView.this.strategy == null || NBodiesView.this.tStopped) {
 						return;
 					}
-					final List<Body> bodies = SimulationView.this.strategy.getBodies();
-					SimulationView.this.lblKeyColor.setText(SimulationView.LOC.getRes("lblKeyColor",
+					final List<Body> bodies = NBodiesView.this.strategy.getBodies();
+					NBodiesView.this.lblKeyColor.setText(NBodiesView.LOC.getRes("lblKeyColor",
 							bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).min().getAsDouble(),
 							bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).max().getAsDouble()));
-					SimulationView.this.durationCalcMinMaxSpeed = DurationTracker
-							.toMillsDuration(dt.stop(SimulationView.DEBUG));
+					NBodiesView.this.durationCalcMinMaxSpeed = DurationTracker
+							.toMillsDuration(dt.stop(NBodiesView.DEBUG));
 
 					// Will cause a EDT call, it might mess the durationTotal value a bit up, but it' not significant
 					SwingUtilities.invokeLater(() -> {
-						SimulationView.this.pnlBodies.repaint();
+						NBodiesView.this.pnlBodies.repaint();
 					});
-					SimulationView.this.updateLabels(false);
+					NBodiesView.this.updateLabels(false);
 
-					if (SimulationView.this.durationTotal < SimulationView.this.refreshRate) {
-						Thread.sleep(SimulationView.this.refreshRate - SimulationView.this.durationTotal);
+					if (NBodiesView.this.durationTotal < NBodiesView.this.refreshRate) {
+						Thread.sleep(NBodiesView.this.refreshRate - NBodiesView.this.durationTotal);
 					}
 				} catch (@SuppressWarnings("unused") final InterruptedException e) {
-					if (SimulationView.this.strategy != null) {
-						SimulationView.this.strategy.interrupt();
+					if (NBodiesView.this.strategy != null) {
+						NBodiesView.this.strategy.interrupt();
 					}
 					continue;
 				}
@@ -491,8 +483,8 @@ public class SimulationView extends JFrame {
 
 		@Override
 		public void interrupt() {
-			if (SimulationView.this.strategy != null) {
-				SimulationView.this.strategy.interrupt();
+			if (NBodiesView.this.strategy != null) {
+				NBodiesView.this.strategy.interrupt();
 			}
 			super.interrupt();
 		}
@@ -501,7 +493,7 @@ public class SimulationView extends JFrame {
 	public static void main(final String[] args) {
 		EventQueue.invokeLater(() -> {
 			try {
-				final SimulationView frame = new SimulationView();
+				final NBodiesView frame = new NBodiesView();
 				frame.setVisible(true);
 			} catch (final Exception e) {
 				e.printStackTrace();

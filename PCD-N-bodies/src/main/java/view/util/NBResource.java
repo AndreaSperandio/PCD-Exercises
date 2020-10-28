@@ -4,7 +4,7 @@ import java.net.URL;
 
 import javax.swing.ImageIcon;
 
-import view.SimulationView;
+import view.NBodiesView;
 
 public class NBResource {
 	private NBResource() {
@@ -23,7 +23,7 @@ public class NBResource {
 	}
 
 	private static URL get(final String resource) {
-		final URL res = SimulationView.class.getResource("/img/" + resource);
-		return res != null ? res : SimulationView.class.getResource("/img/notFound.png");
+		final URL res = NBodiesView.class.getResource("/img/" + resource);
+		return res != null ? res : NBodiesView.class.getResource("/img/notFound.png");
 	}
 }

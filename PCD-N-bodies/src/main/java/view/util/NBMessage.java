@@ -4,7 +4,7 @@ import java.awt.Component;
 
 import javax.swing.JOptionPane;
 
-import view.SimulationView;
+import view.NBodiesView;
 
 public class NBMessage {
 	private static final NBLocalizator LOC = new NBLocalizator(NBMessage.class);
@@ -52,6 +52,6 @@ public class NBMessage {
 	}
 
 	private static String getMessageTitle(final Component comp, final String resTitle) {
-		return comp instanceof SimulationView ? ((SimulationView) comp).getTitle() : NBMessage.LOC.getRes(resTitle);
+		return comp instanceof NBodiesView ? ((NBodiesView) comp).getTitle() : NBMessage.LOC.getRes(resTitle);
 	}
 }

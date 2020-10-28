@@ -23,7 +23,7 @@ repositories {
     jcenter()
 }
 
-mainClassName = "view.SimulationView"
+mainClassName = "view.NBodiesView"
 
 shadowJar {
     transform(AppendingTransformer) {
