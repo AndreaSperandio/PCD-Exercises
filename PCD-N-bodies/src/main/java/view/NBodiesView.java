@@ -436,11 +436,11 @@ public class NBodiesView extends JFrame {
 
 	private void start() {
 		this.tStopped = false;
-		this.thread = new SVThread();
+		this.thread = new NBVThread();
 		this.thread.start();
 	}
 
-	private class SVThread extends Thread {
+	private class NBVThread extends Thread {
 		@Override
 		public void run() {
 			while (!NBodiesView.this.tStopped) {
