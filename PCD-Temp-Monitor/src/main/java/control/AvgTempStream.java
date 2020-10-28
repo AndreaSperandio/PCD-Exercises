@@ -1,8 +1,8 @@
-package model;
+package control;
 
 import io.reactivex.rxjava3.core.Observable;
 
-public class AverageTempStream {
+public class AvgTempStream {
 	private static class Pair {
 		private final Double t1;
 		private final Double t2;
@@ -14,7 +14,7 @@ public class AverageTempStream {
 		}
 	}
 
-	private AverageTempStream() {
+	private AvgTempStream() {
 		// Do nothing
 	}
 
@@ -22,8 +22,8 @@ public class AverageTempStream {
 	public static Observable<Double> buildAvgTempStream(final Double maxVariation, final Observable<Double> o1,
 			final Observable<Double> o2, final Observable<Double> o3) {
 
-		return Observable.combineLatest(AverageTempStream.getFiltered(o1, maxVariation),
-				AverageTempStream.getFiltered(o2, maxVariation), AverageTempStream.getFiltered(o3, maxVariation),
+		return Observable.combineLatest(AvgTempStream.getFiltered(o1, maxVariation),
+				AvgTempStream.getFiltered(o2, maxVariation), AvgTempStream.getFiltered(o3, maxVariation),
 				(s1, s2, s3) -> (s1 + s2 + s3) / 3.0);
 	}
 

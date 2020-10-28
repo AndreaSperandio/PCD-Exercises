@@ -1,6 +1,7 @@
-package model;
+package control;
 
 import io.reactivex.rxjava3.core.Observable;
+import model.TempSensor;
 
 public class TempStream {
 	private TempStream() {
