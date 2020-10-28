@@ -40,7 +40,7 @@ public class NBodiesView extends JFrame {
 	private static final long serialVersionUID = 846132440578478084L;
 
 	private static final NBLocalizator LOC = new NBLocalizator(NBodiesView.class);
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
 	private static final int MIN_BODY_SIZE = 1;
 	private static final int N_BODIES = 5000;
@@ -117,7 +117,6 @@ public class NBodiesView extends JFrame {
 		this.setExtendedState(Frame.MAXIMIZED_BOTH);
 		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
-			@SuppressWarnings("unused")
 			@Override
 			public void windowClosing(final WindowEvent e) {
 				if (NBodiesView.DEBUG
