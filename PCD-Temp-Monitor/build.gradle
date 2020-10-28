@@ -9,6 +9,8 @@
 plugins {
     // Apply the java-library plugin to add support for Java Library
     id 'java-library'
+    
+    //id 'application'
 }
 
 repositories {
@@ -23,7 +25,10 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:28.2-jre'
-
+    
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
-}
+    testImplementation 'junit:junit:4.12'    
+    
+    // RX Java 
+    implementation "io.reactivex.rxjava3:rxjava:3.0.2"
+ }
