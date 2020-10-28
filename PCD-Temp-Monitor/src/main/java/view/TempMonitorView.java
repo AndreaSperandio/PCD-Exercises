@@ -13,9 +13,12 @@ import javax.swing.JLabel;
 import javax.swing.WindowConstants;
 
 import control.AvgTempStream;
+import control.Chronometer;
 import control.TempStream;
 import io.reactivex.rxjava3.core.Observable;
 import view.component.TMButton;
+import view.component.TMDoubleTextField;
+import view.component.TMIntTextField;
 import view.util.TMColor;
 import view.util.TMLocalizator;
 import view.util.TMMessage;
@@ -25,8 +28,11 @@ public class TempMonitorView extends JFrame {
 	private static final long serialVersionUID = 846132440578478084L;
 
 	private static final TMLocalizator LOC = new TMLocalizator(TempMonitorView.class);
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 	private static final Font INCREASED_FONT;
+
+	private static final Double DEF_THRESHOLD = 70.0;
+	private static final int DEF_TIME_THRESHOLD = 2000;  // millis
 
 	static {
 		final Font font = new JLabel().getFont();
@@ -40,6 +46,10 @@ public class TempMonitorView extends JFrame {
 	private final TMButton btnStart = new TMButton(TempMonitorView.LOC.getRes("btnStart"), TMResource.getStartImage());
 	private final TMButton btnStop = new TMButton(TempMonitorView.LOC.getRes("btnStop"), TMResource.getStopImage());
 	private final TMButton btnReset = new TMButton(TempMonitorView.LOC.getRes("btnReset"), TMResource.getResetImage());
+	private final JLabel lblThreshold = new JLabel(TempMonitorView.LOC.getRes("lblThreshold"));
+	private final TMDoubleTextField txtThreshold = new TMDoubleTextField();
+	private final JLabel lblTimeThreshold = new JLabel(TempMonitorView.LOC.getRes("lblTimeThreshold"));
+	private final TMIntTextField txtTimeThreshold = new TMIntTextField();
 
 	private final JLabel lblTemperature = new JLabel(TempMonitorView.LOC.getRes("lblTemperature").toUpperCase());
 	private final JLabel lblMin = new JLabel(TempMonitorView.LOC.getRes("lblMin"));
@@ -48,11 +58,14 @@ public class TempMonitorView extends JFrame {
 	private final JLabel lblCurrentValue = new JLabel();
 	private final JLabel lblMax = new JLabel(TempMonitorView.LOC.getRes("lblMax"));
 	private final JLabel lblMaxValue = new JLabel();
+	private final JLabel lblWrnThreshold = new JLabel(
+			TempMonitorView.LOC.getRes("lblWrnThreshold", TempMonitorView.DEF_TIME_THRESHOLD + 1));
 
 	private Thread thread = null;
 	private volatile boolean tStopped = false;
 	private volatile boolean tPaused = false;
 
+	private Chronometer thresholdChrono = null;
 	private volatile Double minValue = null;
 	private volatile Double maxValue = null;
 
@@ -69,7 +82,6 @@ public class TempMonitorView extends JFrame {
 		this.setExtendedState(Frame.MAXIMIZED_BOTH);
 		this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.addWindowListener(new WindowAdapter() {
-			@SuppressWarnings("unused")
 			@Override
 			public void windowClosing(final WindowEvent e) {
 				if (TempMonitorView.DEBUG || TMMessage.showConfirmWarnDialog(TempMonitorView.this,
@@ -96,19 +108,32 @@ public class TempMonitorView extends JFrame {
 		this.add(this.btnStart);
 		this.add(this.btnStop);
 		this.add(this.btnReset);
+		this.add(this.lblThreshold);
+		this.add(this.txtThreshold);
+		this.add(this.lblTimeThreshold);
+		this.add(this.txtTimeThreshold);
 
 		final int heighButton = 30;
 		final int marginButton = heighButton + 10;
 		y = 20;
-		this.btnStart.setBounds(850, y, 120, heighButton);
+		this.btnStart.setBounds(850, y, 130, heighButton);
 		y += marginButton;
-		this.btnStop.setBounds(850, y, 120, heighButton);
+		this.btnStop.setBounds(850, y, 130, heighButton);
 		y += marginButton;
-		this.btnReset.setBounds(850, y, 120, heighButton);
+		this.btnReset.setBounds(850, y, 130, heighButton);
+		y += marginButton;
+		this.lblThreshold.setBounds(850, y, 70, heighButton);
+		this.txtThreshold.setBounds(930, y, 50, heighButton);
+		y += marginButton;
+		this.lblTimeThreshold.setBounds(850, y, 70, heighButton);
+		this.txtTimeThreshold.setBounds(930, y, 50, heighButton);
 
 		this.btnStart.addActionListener(e -> this.btnStartActionPerformed());
 		this.btnStop.addActionListener(e -> this.btnStopActionPerformed());
 		this.btnReset.addActionListener(e -> this.btnClearActionPerformed());
+
+		this.lblThreshold.setToolTipText(TempMonitorView.LOC.getRes("lblThresholdToolTip"));
+		this.lblTimeThreshold.setToolTipText(TempMonitorView.LOC.getRes("lblTimeThresholdToolTip"));
 
 		this.add(this.lblTemperature);
 		this.add(this.lblMin);
@@ -117,6 +142,7 @@ public class TempMonitorView extends JFrame {
 		this.add(this.lblCurrentValue);
 		this.add(this.lblMax);
 		this.add(this.lblMaxValue);
+		this.add(this.lblWrnThreshold);
 
 		final int heighComp = 30;
 		final int marginComp = heighComp + 10;
@@ -130,6 +156,8 @@ public class TempMonitorView extends JFrame {
 		this.lblMinValue.setBounds(240, y, 120, heighComp);
 		this.lblCurrentValue.setBounds(390, y, 120, heighComp);
 		this.lblMaxValue.setBounds(540, y, 120, heighComp);
+		y += heighParams;
+		this.lblWrnThreshold.setBounds(80, y, 750, heighComp);
 
 		this.lblMin.setToolTipText(TempMonitorView.LOC.getRes("lblMinToolTip"));
 		this.lblCurrent.setToolTipText(TempMonitorView.LOC.getRes("lblCurrentToolTip"));
@@ -139,6 +167,7 @@ public class TempMonitorView extends JFrame {
 		this.lblMinValue.setForeground(TMColor.LBL_BLUE);
 		this.lblCurrentValue.setForeground(TMColor.LBL_BLUE);
 		this.lblMaxValue.setForeground(TMColor.LBL_BLUE);
+		this.lblWrnThreshold.setForeground(TMColor.LBL_ORANGE);
 
 		this.lblTemperature.setFont(TempMonitorView.INCREASED_FONT);
 		this.lblMin.setFont(TempMonitorView.INCREASED_FONT);
@@ -147,9 +176,13 @@ public class TempMonitorView extends JFrame {
 		this.lblCurrentValue.setFont(TempMonitorView.INCREASED_FONT);
 		this.lblMax.setFont(TempMonitorView.INCREASED_FONT);
 		this.lblMaxValue.setFont(TempMonitorView.INCREASED_FONT);
+		this.lblWrnThreshold.setFont(TempMonitorView.INCREASED_FONT);
 	}
 
 	private void init() {
+		this.txtThreshold.setValue(TempMonitorView.DEF_THRESHOLD);
+		this.txtTimeThreshold.setValue(TempMonitorView.DEF_TIME_THRESHOLD);
+
 		this.updateGraphics(false, true);
 
 		this.pack();
@@ -165,33 +198,50 @@ public class TempMonitorView extends JFrame {
 
 		this.tStopped = false;
 		this.tPaused = false;
-		this.thread = new TMVThread();
-		this.thread.start();
+		if (this.thread == null) {
+			this.thread = new TMVThread();
+			this.thread.start();
+		} else {
+			synchronized (this.thread) {
+				this.thread.notify();
+			}
+		}
+
+		if (this.thresholdChrono != null) {
+			this.thresholdChrono.pauseChrono(false);
+		}
 	}
 
 	private void btnStopActionPerformed() {
 		this.updateGraphics(false, false);
 
+		this.tStopped = false;
+		this.tPaused = true;
 		if (this.thread != null) {
-			this.tStopped = false;
-			this.tPaused = true;
 			synchronized (this.thread) {
 				this.thread.notify();
 			}
+		}
+
+		if (this.thresholdChrono != null) {
+			this.thresholdChrono.pauseChrono(true);
 		}
 	}
 
 	private void btnClearActionPerformed() {
 		this.updateGraphics(false, true);
 
+		this.tStopped = true;
+		this.tPaused = false;
 		if (this.thread != null) {
-			this.tStopped = true;
-			this.tPaused = false;
 			this.thread.interrupt();
 			this.thread = null;
 		}
 
-		//TODO
+		if (this.thresholdChrono != null) {
+			this.thresholdChrono.stopChrono();
+			this.thresholdChrono = null;
+		}
 	}
 
 	private void updateGraphics(final boolean started, final boolean cleared) {
@@ -214,6 +264,7 @@ public class TempMonitorView extends JFrame {
 			this.lblMinValue.setText("-");
 			this.lblCurrentValue.setText("-");
 			this.lblMaxValue.setText("-");
+			this.lblWrnThreshold.setVisible(false);
 			this.minValue = null;
 			this.maxValue = null;
 			return;
@@ -224,14 +275,14 @@ public class TempMonitorView extends JFrame {
 			return;
 		}
 
-		this.lblCurrentValue.setText(TempMonitorView.fromDouble(value));
+		this.lblCurrentValue.setText(TempMonitorView.stringFromDouble(value));
 		if (TempMonitorView.DEBUG) {
 			System.out.println("VAL: " + value);
 		}
 
 		if (this.minValue == null || value < this.minValue) {
 			this.minValue = value;
-			this.lblMinValue.setText(TempMonitorView.fromDouble(this.minValue));
+			this.lblMinValue.setText(TempMonitorView.stringFromDouble(this.minValue));
 			if (TempMonitorView.DEBUG) {
 				System.out.println("MIN: " + this.minValue);
 			}
@@ -239,10 +290,32 @@ public class TempMonitorView extends JFrame {
 
 		if (this.maxValue == null || value > this.maxValue) {
 			this.maxValue = value;
-			this.lblMaxValue.setText(TempMonitorView.fromDouble(this.maxValue));
+			this.lblMaxValue.setText(TempMonitorView.stringFromDouble(this.maxValue));
 			if (TempMonitorView.DEBUG) {
 				System.out.println("MAX: " + this.maxValue);
 			}
+		}
+
+		if (value > this.txtThreshold.getDouble()) {
+			if (this.thresholdChrono == null) {
+				this.thresholdChrono = new Chronometer();
+				this.thresholdChrono.start();
+			} else {
+				final long elapsedTime = this.thresholdChrono.getElapsedTime();
+				if (elapsedTime > this.txtTimeThreshold.getInt()) {
+					this.lblWrnThreshold.setVisible(true);
+					this.lblWrnThreshold.setText(TempMonitorView.LOC.getRes("lblWrnThreshold", elapsedTime));
+				} else {
+					// The user might change the time threshold at runtime
+					this.lblWrnThreshold.setVisible(false);
+				}
+			}
+		} else {
+			if (this.thresholdChrono != null) {
+				this.thresholdChrono.stopChrono();
+				this.thresholdChrono = null;
+			}
+			this.lblWrnThreshold.setVisible(false);
 		}
 	}
 
@@ -251,12 +324,17 @@ public class TempMonitorView extends JFrame {
 				|| !this.tempStreamParams3.checkParams()) {
 			return false;
 		}
-		//TODO
+
+		if (this.txtTimeThreshold.getInt() <= 0) {
+			TMMessage.showErrDialog(this,
+					this.lblTimeThreshold.getText() + " " + TempMonitorView.LOC.getRes("errNegativeValue"));
+			return false;
+		}
 
 		return true;
 	}
 
-	private static String fromDouble(final Double value) {
+	private static String stringFromDouble(final Double value) {
 		return String.format("%.02f", value);
 	}
 
@@ -303,6 +381,10 @@ public class TempMonitorView extends JFrame {
 					this.ts1.pauseEmitting(TempMonitorView.this.tPaused);
 					this.ts2.pauseEmitting(TempMonitorView.this.tPaused);
 					this.ts3.pauseEmitting(TempMonitorView.this.tPaused);
+					if (!TempMonitorView.this.tPaused) {
+						// Need to re-subscribe after a pause
+						this.combined.subscribe(e -> TempMonitorView.this.updateLabels(false, e));
+					}
 				} catch (@SuppressWarnings("unused") final InterruptedException e) {
 					// Do nothing
 				}
@@ -317,7 +399,6 @@ public class TempMonitorView extends JFrame {
 
 			super.interrupt();
 		}
-
 	}
 
 	public static void main(final String[] args) {

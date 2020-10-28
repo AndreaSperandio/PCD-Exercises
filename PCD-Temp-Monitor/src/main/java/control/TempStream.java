@@ -33,6 +33,7 @@ public class TempStream {
 					while (!TempStream.this.stopped) {
 						try {
 							if (TempStream.this.paused) {
+								//synchronized (this) forces the AvgTempStream to stop listening and need to re-subscribe
 								synchronized (this) {
 									this.wait();
 								}
@@ -56,8 +57,8 @@ public class TempStream {
 		this.thread.interrupt();
 	}
 
-	public synchronized void pauseEmitting(final boolean _paused) {
-		this.paused = _paused;
+	public synchronized void pauseEmitting(final boolean pause) {
+		this.paused = pause;
 		synchronized (this.thread) {
 			this.thread.notify();
 		}

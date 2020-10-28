@@ -10,7 +10,9 @@ plugins {
     // Apply the java-library plugin to add support for Java Library
     id 'java-library'
     
-    //id 'application'
+    id 'application'
+    
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 repositories {
@@ -18,6 +20,8 @@ repositories {
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
 }
+
+mainClassName = "view.TempMonitorView"
 
 dependencies {
     // This dependency is exported to consumers, that is to say found on their compile classpath.
