@@ -3,6 +3,14 @@ package control;
 import io.reactivex.rxjava3.core.Observable;
 import model.TempSensor;
 
+/**
+ * Class that returns and control a stream of TempSensor reads
+ *
+ * Each read is done at a freq interval and the emitter can be paused, resumed or stopped permanently.
+ *
+ * @author Andrea Sperandio
+ *
+ */
 public class TempStream {
 	private final long freq;
 	private final double min;

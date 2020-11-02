@@ -7,6 +7,9 @@ import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -39,9 +42,7 @@ public class TempMonitorView extends JFrame {
 		INCREASED_FONT = new Font(font.getFamily(), font.getStyle(), 15);
 	}
 
-	private final TempStreamParams tempStreamParams1 = new TempStreamParams("1");
-	private final TempStreamParams tempStreamParams2 = new TempStreamParams("2");
-	private final TempStreamParams tempStreamParams3 = new TempStreamParams("3");
+	private final List<TempStreamParams> tempStreamParamss = new ArrayList<>();
 
 	private final TMButton btnStart = new TMButton(TempMonitorView.LOC.getRes("btnStart"), TMResource.getStartImage());
 	private final TMButton btnStop = new TMButton(TempMonitorView.LOC.getRes("btnStop"), TMResource.getStopImage());
@@ -93,17 +94,19 @@ public class TempMonitorView extends JFrame {
 		});
 		this.setLayout(null);
 
-		this.add(this.tempStreamParams1);
-		this.add(this.tempStreamParams2);
-		this.add(this.tempStreamParams3);
+		TempStreamParams tsParams;
+		for (int i = 0; i < AvgTempStream.N_TEMP_STREAMS; i++) {
+			tsParams = new TempStreamParams("" + (i + 1));
+			this.tempStreamParamss.add(tsParams);
+			this.add(tsParams);
+		}
 
 		final int heighParams = 70;
 		int y = 10;
-		this.tempStreamParams1.setBounds(10, y, 775, heighParams);
-		y += heighParams;
-		this.tempStreamParams2.setBounds(10, y, 775, heighParams);
-		y += heighParams;
-		this.tempStreamParams3.setBounds(10, y, 775, heighParams);
+		for (int i = 0; i < AvgTempStream.N_TEMP_STREAMS; i++) {
+			this.tempStreamParamss.get(i).setBounds(10, y, 775, heighParams);
+			y += heighParams;
+		}
 
 		this.add(this.btnStart);
 		this.add(this.btnStop);
@@ -146,7 +149,7 @@ public class TempMonitorView extends JFrame {
 
 		final int heighComp = 30;
 		final int marginComp = heighComp + 10;
-		y = heighParams * 3 + marginComp;
+		y = heighParams * AvgTempStream.N_TEMP_STREAMS + marginComp;
 		this.lblTemperature.setBounds(340, y, 200, heighComp);
 		y += marginComp;
 		this.lblMin.setBounds(240, y, 120, heighComp);
@@ -252,9 +255,7 @@ public class TempMonitorView extends JFrame {
 			this.btnStart.setText(TempMonitorView.LOC.getRes(cleared ? "btnStart" : "btnResume"));
 		}
 
-		this.tempStreamParams1.setEnabled(!started && cleared);
-		this.tempStreamParams2.setEnabled(!started && cleared);
-		this.tempStreamParams3.setEnabled(!started && cleared);
+		this.tempStreamParamss.forEach(t -> t.setEnabled(!started && cleared));
 
 		this.updateLabels(cleared, null);
 	}
@@ -320,9 +321,10 @@ public class TempMonitorView extends JFrame {
 	}
 
 	private boolean checkParams() {
-		if (!this.tempStreamParams1.checkParams() || !this.tempStreamParams2.checkParams()
-				|| !this.tempStreamParams3.checkParams()) {
-			return false;
+		for (final TempStreamParams tempStreamParams : this.tempStreamParamss) {
+			if (!tempStreamParams.checkParams()) {
+				return false;
+			}
 		}
 
 		if (this.txtTimeThreshold.getInt() <= 0) {
@@ -339,38 +341,27 @@ public class TempMonitorView extends JFrame {
 	}
 
 	private class TMVThread extends Thread {
-		private final TempStream ts1;
-		private final TempStream ts2;
-		private final TempStream ts3;
-
-		private final Observable<Double> temp1;
-		private final Observable<Double> temp2;
-		private final Observable<Double> temp3;
-
+		private final List<TempStream> tss = new ArrayList<>();
+		private final List<Observable<Double>> temps = new ArrayList<>();
 		private final Observable<Double> combined;
 
 		public TMVThread() {
-			this.ts1 = TempMonitorView.this.tempStreamParams1.getTempStream();
-			this.ts2 = TempMonitorView.this.tempStreamParams2.getTempStream();
-			this.ts3 = TempMonitorView.this.tempStreamParams3.getTempStream();
+			for (final TempStreamParams tempStreamParams : TempMonitorView.this.tempStreamParamss) {
+				this.tss.add(tempStreamParams.getTempStream());
+			}
 
-			this.temp1 = this.ts1.build();
-			this.temp2 = this.ts2.build();
-			this.temp3 = this.ts3.build();
+			for (final TempStream ts : this.tss) {
+				this.temps.add(ts.build());
+			}
 
-			this.combined = AvgTempStream.buildAvgTempStream(this.temp1,
-					TempMonitorView.this.tempStreamParams1.getMaxVariation(), this.temp2,
-					TempMonitorView.this.tempStreamParams2.getMaxVariation(), this.temp3,
-					TempMonitorView.this.tempStreamParams3.getMaxVariation());
+			this.combined = AvgTempStream.buildAvgTempStream(this.temps, TempMonitorView.this.tempStreamParamss.stream()
+					.map(TempStreamParams::getMaxVariation).collect(Collectors.toList()));
 		}
 
 		@Override
 		public void run() {
 			this.combined.subscribe(e -> TempMonitorView.this.updateLabels(false, e));
-
-			this.temp1.publish().connect();
-			this.temp2.publish().connect();
-			this.temp3.publish().connect();
+			this.temps.forEach(t -> t.publish().connect());
 
 			while (!TempMonitorView.this.tStopped) {
 				try {
@@ -378,9 +369,7 @@ public class TempMonitorView extends JFrame {
 						this.wait();
 					}
 
-					this.ts1.pauseEmitting(TempMonitorView.this.tPaused);
-					this.ts2.pauseEmitting(TempMonitorView.this.tPaused);
-					this.ts3.pauseEmitting(TempMonitorView.this.tPaused);
+					this.tss.forEach(t -> t.pauseEmitting(TempMonitorView.this.tPaused));
 					if (!TempMonitorView.this.tPaused) {
 						// Need to re-subscribe after a pause
 						this.combined.subscribe(e -> TempMonitorView.this.updateLabels(false, e));
@@ -393,10 +382,7 @@ public class TempMonitorView extends JFrame {
 
 		@Override
 		public void interrupt() {
-			this.ts1.stopEmitting();
-			this.ts2.stopEmitting();
-			this.ts3.stopEmitting();
-
+			this.tss.forEach(TempStream::stopEmitting);
 			super.interrupt();
 		}
 	}

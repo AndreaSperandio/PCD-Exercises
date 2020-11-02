@@ -1,5 +1,13 @@
 package control;
 
+/**
+ * Chronometer class used to keep track of the elapsed time since the running point.
+ *
+ * The Chronometer can be paused, resumed or stopped permanently.
+ *
+ * @author Andrea Sperandio
+ *
+ */
 public class Chronometer extends Thread {
 	private volatile boolean paused;
 	private volatile boolean stopped;
@@ -24,15 +32,8 @@ public class Chronometer extends Thread {
 				}
 				if (this.paused) {
 					this.elapsedTime = System.currentTimeMillis() - this.startTime;
-					//System.out.println("elapsedTime = " + this.elapsedTime);
 				} else {
 					this.startTime = System.currentTimeMillis() - this.elapsedTime;
-					if (this.startTime < 1000) {
-						System.err.println("qui " + this.startTime);
-					}
-
-					/*System.out.println("startTime = " + this.startTime);
-					System.out.println("elapsedTimeNow = " + this.getElapsedTime());*/
 				}
 			} catch (@SuppressWarnings("unused") final InterruptedException e) {
 				// Do nothing

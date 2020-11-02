@@ -100,26 +100,26 @@ public class TempStreamParams extends JPanel {
 
 	public boolean checkParams() {
 		if (this.txtFreq.getInt() <= 0) {
-			TMMessage.showErrDialog(this,
-					this.lblFreq.getText() + " " + TempStreamParams.LOC.getRes("errNegativeValue"));
+			TMMessage.showErrDialog(this, this.lblTitle.getText() + ": " + this.lblFreq.getText() + " "
+					+ TempStreamParams.LOC.getRes("errNegativeValue"));
 			return false;
 		}
 
 		if (this.txtMin.getDouble() >= this.txtMax.getDouble()) {
-			TMMessage.showErrDialog(this, this.lblMin.getText() + " " + TempStreamParams.LOC.getRes("errGreaterThan")
-					+ " " + this.lblMax.getText() + "!");
+			TMMessage.showErrDialog(this, this.lblTitle.getText() + ": " + this.lblMin.getText() + " "
+					+ TempStreamParams.LOC.getRes("errGreaterThan") + " " + this.lblMax.getText() + "!");
 			return false;
 		}
 
 		if (this.txtSpikeFreq.getDouble() < 0 || this.txtSpikeFreq.getDouble() > 1) {
-			TMMessage.showErrDialog(this,
-					this.lblSpikeFreq.getText() + " " + TempStreamParams.LOC.getRes("errBetween", "0.0", "1.0"));
+			TMMessage.showErrDialog(this, this.lblTitle.getText() + ": " + this.lblSpikeFreq.getText() + " "
+					+ TempStreamParams.LOC.getRes("errBetween", "0.0", "1.0"));
 			return false;
 		}
 
 		if (this.txtMaxVariation.getDouble() <= 0) {
-			TMMessage.showErrDialog(this,
-					this.lblMaxVariation.getText() + " " + TempStreamParams.LOC.getRes("errNegativeValue"));
+			TMMessage.showErrDialog(this, this.lblTitle.getText() + ": " + this.lblMaxVariation.getText() + " "
+					+ TempStreamParams.LOC.getRes("errNegativeValue"));
 			return false;
 		}
 
