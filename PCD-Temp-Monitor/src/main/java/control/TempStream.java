@@ -32,12 +32,13 @@ public class TempStream {
 	}
 
 	public Observable<Double> build() {
+		// Placed here to have a hot observable (it's a cold observable if placed inside the Observable)
+		final TempSensor tempSensor = new TempSensor(TempStream.this.min, TempStream.this.max,
+				TempStream.this.spikeFreq);
 		return Observable.create(emitter -> {
 			this.thread = new Thread() {
 				@Override
 				public void run() {
-					final TempSensor tempSensor = new TempSensor(TempStream.this.min, TempStream.this.max,
-							TempStream.this.spikeFreq);
 					while (!TempStream.this.stopped) {
 						try {
 							if (TempStream.this.paused) {
@@ -47,8 +48,7 @@ public class TempStream {
 								}
 								continue;
 							}
-
-							emitter.onNext(Double.valueOf(tempSensor.getCurrentValue()));
+							emitter.onNext(tempSensor.getCurrentValue());
 							Thread.sleep(TempStream.this.freq);
 						} catch (@SuppressWarnings("unused") final Exception ex) {
 							// Do nothing
