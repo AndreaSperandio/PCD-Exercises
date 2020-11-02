@@ -2,7 +2,10 @@ package control;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -76,10 +79,16 @@ public class DistributedStrategy implements Strategy {
 	public void createBodies(final double minMass, final double maxMass, final double maxPosX, final double maxPosY,
 			final double minSpeed, final double maxSpeed) {
 
-		final CompletableFuture<Body[]> future = new CompletableFuture<>();
+		final CompletableFuture<Body[]> future = new CompletableFuture<>().orTimeout(1, TimeUnit.MINUTES)
+				.thenApply(o -> (Body[]) o);
 		this.mainActor
 				.tell(new MainActorMsg.CreateBodies(future, minMass, maxMass, maxPosX, maxPosY, minSpeed, maxSpeed));
-		this.bodies = future.join();
+
+		try {
+			this.bodies = future.join();
+		} catch (@SuppressWarnings("unused") final CancellationException | CompletionException e) {
+			this.bodies = null;
+		}
 	}
 
 	/**
@@ -88,11 +97,19 @@ public class DistributedStrategy implements Strategy {
 	 */
 	@Override
 	public void calculateAndMove() {
+		if (this.bodies == null) {
+			return;
+		}
 
-		final CompletableFuture<Body[]> future = new CompletableFuture<>();
+		final CompletableFuture<Body[]> future = new CompletableFuture<>().orTimeout(1, TimeUnit.MINUTES)
+				.thenApply(o -> (Body[]) o);
 		this.mainActor.tell(new MainActorMsg.MoveBodies(future));
 		if (!this.interrupted) {
-			this.bodies = future.join();
+			try {
+				this.bodies = future.join();
+			} catch (@SuppressWarnings("unused") final CancellationException | CompletionException e) {
+				this.bodies = null;
+			}
 		} else {
 			this.mainActor.tell(new MainActorMsg.SetBodies(this.bodies));
 			this.interrupted = false;

@@ -456,9 +456,11 @@ public class NBodiesView extends JFrame {
 						return;
 					}
 					final List<Body> bodies = NBodiesView.this.strategy.getBodies();
-					NBodiesView.this.lblKeyColor.setText(NBodiesView.LOC.getRes("lblKeyColor",
-							bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).min().getAsDouble(),
-							bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).max().getAsDouble()));
+					if (bodies != null) {
+						NBodiesView.this.lblKeyColor.setText(NBodiesView.LOC.getRes("lblKeyColor",
+								bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).min().getAsDouble(),
+								bodies.stream().mapToDouble(b -> b.getSpeed().getModule()).max().getAsDouble()));
+					}
 					NBodiesView.this.durationCalcMinMaxSpeed = DurationTracker
 							.toMillsDuration(dt.stop(NBodiesView.DEBUG));
 
